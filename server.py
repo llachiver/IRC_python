@@ -44,9 +44,10 @@ while(True):
                 soc.send(("CONNECT " + name).encode())
             else:
                 soc.send(b"ERR 7\n")
-
+'''
 
         else: #client send command
             print("---------")
             for j in hubClients:
                 print(hubClients[j][1])
+'''
