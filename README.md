@@ -1,4 +1,4 @@
-# IRC chat in Python
+# IRC_like chat in Python
 
 ### by ROMAINPC & Picachoc
 
@@ -20,7 +20,7 @@
 - /kill (nick)
 - /ban (nick)
 
-
+# PICROM Protocol:
 ## Protocol commands (Client to Serv):
 - MSG (message)
 - NICK (nick)
@@ -38,6 +38,7 @@
 - MSG (nick) (message)
 - ERR (code)
 - NICK (oldNick) (newNick)
+- NICKOK (firstNick)
 - LIST (channel1) ... (channelN)
 - JOIN (newCommerNick) (currentAdmin)
 - WHO (client1) ... (clientN)
