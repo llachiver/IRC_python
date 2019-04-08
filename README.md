@@ -55,3 +55,4 @@
 - ERR 4  selected user not on the channel
 - ERR 5  try to send when not on a channel
 - ERR 6  unexisting or closed channel
+- ERR 7 noNick try to do other command than NICK
