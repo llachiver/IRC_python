@@ -38,7 +38,7 @@
 - MSG (nick) (message)
 - ERR (code)
 - NICK (oldNick) (newNick)
-- NICKOK (firstNick)
+- CONNECT (firstNick)
 - LIST (channel1) ... (channelN)
 - JOIN (newCommerNick) (currentAdmin)
 - WHO (client1) ... (clientN)
@@ -56,3 +56,4 @@
 - ERR 4  selected user not on the channel
 - ERR 5  try to send when not on a channel
 - ERR 6  unexisting or closed channel
+- ERR 7 limit of connexions reached
