@@ -6,7 +6,7 @@ import tkinter
 '''if(len(sys.argv)==0):
     printf("Error : please specify the chat's IP adress.")'''
 
-HOST = "127.0.0.1" #the parameter of the program call will be the chat's IP adress
+HOST = "::1" #the parameter of the program call will be the chat's IP adress
 PORT = 1459
 nick = "" #user's nickname
 
@@ -22,7 +22,7 @@ def PICROM_to_string(data):
 
     
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
     #The server gives us a first nick.
     data = s.recv(1024)
