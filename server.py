@@ -1,6 +1,7 @@
 import socket
 import select
 import sys
+import daytime
 
 
 PORT = 1459 #default port for the chat
@@ -12,7 +13,7 @@ HOST = ''
     #> type: dictionnary
     #> client_socket -> channelName (string)
 
-#channels:
+#channel:
     #> type: dictionnary
     #> channelName (string) -> clients
 
@@ -25,12 +26,11 @@ HOST = ''
 
 #client :
     #> type : tuple
-    #> (IP, nick)
+    #> (IP, nick, rank)
 
         
 clt_location = {}
-channels = {}
-hub_channel = {}
+channel = {}
 nicks = [] 
 sockets = []
 guest = 1
@@ -43,32 +43,40 @@ def log(data):
 
 def send_all(string, clt_sender): #send to all users of a channel -- work in progress
     log(string)
+
+    
+    '''
     for i in hub_channel:
         if(i != clt_sender):
             i.send(string.encode())
-    for i in channels:
+    for i in channel:
         for j in i:
             if(j != clt_sender):
-                j.send(string.encode())
+                j.send(string.encode())'''
 
 def send(string, dest):
+    log(string)
     dest.send(string.encode())
     
 
 def picrom_join(clt,args):
-    currentChannel = clt_location[clt]                  #the channel where he's coming from
-    this_client = channels[currentChannel][clt]         #(ip,nick)
-    client_nick = this_client[1]
     channelName = args[0]                               #the name of the channel he wants to join
+    if(channelName == "HUB"):
+        
+    currentChannel = clt_location[clt]                  #the channel where he's coming from
+    this_client = channel[currentChannel][clt]         #(ip,nick)
+    client_nick = this_client[1]
 
-    del channels[currentChannel][clt]                   #we delete him from his current channel
+    del channel[currentChannel][clt]                   #we delete him from his current channel
     
-    channels[channelName][clt]=this_client              #we add him to his new channel
+    channel[channelName][clt]=this_client              #we add him to his new channel
     clt_location[clt] = channelName                     #we change the client's location
     
-    currentAdmin = 
+    currentAdmin = channel[channelName]
     data = "JOIN "+client_nick+
+
 '''
+def picrom_leave(clt):
 def picrom_msg(clt,args):
 def picrom_nick(clt,args):
 def picrom_list(clt,args):
@@ -96,11 +104,11 @@ while(True):
             
             (soc,addr) = serverSoc.accept()
             sockets.append(soc)
-            if guest < sys.maxsize:#set default nick to new commers
+            if guest < sys.maxsize:#set default nick to newcomers
                 name = "Guest"+str(guest)
                 guest += 1
-                hub_channel[soc]= (addr[0], name)
-                clt_location[soc]="HUB"
+                channel["HUB"][s_clt] = (addr[0], name)
+                clt_location[s_clt]="HUB"
                 send(("CONNECT " + name), soc)
                 nicks.append(name)
             else:
@@ -111,6 +119,7 @@ while(True):
             line = s_clt.recv(1500)
             
             if(len(line) == 0): #if a client leaves the server
+                picrom_leave(s_clt)
                 send_all("LEAVE " + hub_channel[s_clt][1], i)
                 s_clt.close()
                 sockets.remove(s_clt)

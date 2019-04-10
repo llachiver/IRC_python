@@ -8,12 +8,12 @@
 ## Available commands:
 
 - /nick (nick)
-- /list
-- /join (channelName)
+- /list (hub only)
+- /join (channelName) (hub only)
 - /who
 - /prv_msg (nick)
 - /leave
-- /bye
+- /bye (hub only)
 
 ## Admins commands:
 - /kick (nick)
@@ -33,6 +33,7 @@
 - KICK (nick)
 - KILL (nick)
 - BAN (nick)
+- REN (new_channel_name)
 
 ## Protocol commands (Serv to Client):
 - MSG (nick) (message)
