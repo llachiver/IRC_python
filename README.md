@@ -45,7 +45,7 @@
 - (B) WHO (R)(client1) ... (R)(clientN)
 - (B) PRV_MSG (R) (nick) (message)
 - (C) LEAVE (R) (nick)
-- (A) BYE (R) (nick)
+- (A) BYE (nick)
 - (C) KICK (adminNick) (R) (nick)
 - (A) KILL (adminNick) (R) (nick)
 - (A) BAN (adminNick) (R) (nick)
