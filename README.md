@@ -67,3 +67,4 @@ With (R) : rank, 0 if normal, 1 if admin
 - ERR 8  channel name already used
 - ERR 9 wrong args
 - ERR 10 try to join HUB lol
+- ERR 11 can't BYE in channel
