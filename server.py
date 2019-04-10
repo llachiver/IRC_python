@@ -3,48 +3,37 @@ import select
 import sys
 
 
-PORT = 1459
+PORT = 1459 #default port for the chat
 HOST = ''
-
 
 #Each channel gathers its own clients.
 
+#clt_location:
+    #> type: dictionnary
+    #> client_socket -> channelName (string)
+
 #channels:
     #> type: dictionnary
-    #> channelName (string) -> client
-#hub_channel:
-    #> type: dictionnary
-    #> 
+    #> channelName (string) -> clients
+
 #clients :
     #> type : dictionnary
-    #> socket -> client
+    #> client_socket -> client
+
+#hub_channel:
+    #> type: clients
+
 #client :
     #> type : tuple
     #> (IP, nick)
 
+        
+clt_location = {}
 channels = {}
-hub_channel = {}#channel: hub
-nicks = [] #existing nicknames
-
+hub_channel = {}
+nicks = [] 
 sockets = []
-
 guest = 1
-
-
-
-def send_all(string, clt_sender):
-    print(string)
-    for i in hubClients:
-        if(i != clt_sender):
-            i.send(string.encode())
-    for i in channels:
-        for j in i:
-            if(j != clt_sender):
-                j.send(string.encode())
-
-
-def send(string, dest):
-    dest.send(string.encode())
 
 def log(data):
     f= open("log.txt","a+")
@@ -52,19 +41,41 @@ def log(data):
     f.write(str(datetime.datetime.now())+"  :  "+data)
     f.close()
 
-def picrom_join(clt,args):
-    
-    data = "MSG"+clients[clt]
+def send_all(string, clt_sender): #send to all users of a channel -- work in progress
+    log(string)
+    for i in hub_channel:
+        if(i != clt_sender):
+            i.send(string.encode())
+    for i in channels:
+        for j in i:
+            if(j != clt_sender):
+                j.send(string.encode())
 
-def picrom_msg(clt,args):
-    data = "MSG"+clients[clt]
+def send(string, dest):
+    dest.send(string.encode())
     
+
+def picrom_join(clt,args):
+    currentChannel = clt_location[clt]                  #the channel where he's coming from
+    this_client = channels[currentChannel][clt]         #(ip,nick)
+    client_nick = this_client[1]
+    channelName = args[0]                               #the name of the channel he wants to join
+
+    del channels[currentChannel][clt]                   #we delete him from his current channel
+    
+    channels[channelName][clt]=this_client              #we add him to his new channel
+    clt_location[clt] = channelName                     #we change the client's location
+    
+    currentAdmin = 
+    data = "JOIN "+client_nick+
+'''
+def picrom_msg(clt,args):
 def picrom_nick(clt,args):
 def picrom_list(clt,args):
 def picrom_kill(clt,args):
 def picrom_ban(clt,args):
 
-
+'''
 #starting server
 #-----------------------------------------------------
 serverSoc = socket.socket(socket.AF_INET6, socket.SOCK_STREAM, 0) #socket d'écoute
@@ -74,26 +85,22 @@ serverSoc.listen(1)
 #-----------------------------------------------------
 
 
-def generate_nick():
-    name = "Guest"+str(guest)
-    guest += 1
-    return name
-
-
-
 #LOOPBACK:
 while(True):
     (connected, _, _) = select.select( sockets + [serverSoc], [], [])
 
     #browse all connected sockets
-    for clt in connected:
-        if (clt == serverSoc): #case of new connection
+    for s_clt in connected:
+        #print(clt_location[s_clt]);
+        if (s_clt == serverSoc): #case of new connection
             
             (soc,addr) = serverSoc.accept()
             sockets.append(soc)
             if guest < sys.maxsize:#set default nick to new commers
-                name = generate_nick()
-                hubClients[soc]= (addr[0], name, "hub")
+                name = "Guest"+str(guest)
+                guest += 1
+                hub_channel[soc]= (addr[0], name)
+                clt_location[soc]="HUB"
                 send(("CONNECT " + name), soc)
                 nicks.append(name)
             else:
@@ -101,14 +108,14 @@ while(True):
 
 
         else: #the client is connected
-            line = clt.recv(1500)
+            line = s_clt.recv(1500)
             
             if(len(line) == 0): #if a client leaves the server
-                sendToAllOthers("LEAVE " + hubClients[clt][1], i)
-                clt.close()
-                sockets.remove(clt)
-                nicks.remove(hubClients[clt][1])
-                hubClients.pop(clt)
+                send_all("LEAVE " + hub_channel[s_clt][1], i)
+                s_clt.close()
+                sockets.remove(s_clt)
+                nicks.remove(hub_channel[s_clt][1])
+                hubClients.pop(s_clt)
                 
             else: #the client send a command
                 words = line.decode().split()
@@ -116,17 +123,17 @@ while(True):
                 args = words[1:]
 
                 if(command == "JOIN"):
-                    picrom_join(clt,args)
+                    picrom_join(s_clt,args)
                 elif(command == "MSG"):
-                    picrom_msg(clt,args)
+                    picrom_msg(s_clt,args)
                 elif(command == "NICK"):
-                    picrom_nick(clt)
+                    picrom_nick(s_clt)
                 elif(command == "LIST"):
-                    picrom_list(clt)
+                    picrom_list(s_clt)
                 elif(command == "KILL"):
-                    picrom_kill(clt,args)
+                    picrom_kill(s_clt,args)
                 elif(command == "BAN"):
-                    picrom_ban(clt,args)
+                    picrom_ban(s_clt,args)
                 
                
                     

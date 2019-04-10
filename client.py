@@ -30,7 +30,6 @@ with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as s:
     print("Server "+HOST+". Welcome, "+nick+" !")
     while(1):
         msg=input(nick + ': ')
-        s.send(string_to_PICROM(msg))
-            
+        s.send(string_to_PICROM(msg)) 
 
-print('Received', repr(data))
+    print('Received', repr(data))
