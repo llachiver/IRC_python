@@ -9,23 +9,20 @@ HOST = ''
 
 #Each channel gathers its own clients.
 
-#clt_location:
+#clients:
     #> type: dictionnary
-    #> client_socket -> channelName (string)
+    #> client_socket -> [IP, nick, rank, location (string)]
 
 #channel:
     #> type: dictionnary
-    #> channelName (string) -> clients dictionnary
+    #> channelName (string) -> client_socket list (queue)
 
-#client :
-    #> type : dictionnary element
-    #> client_socket -> (IP, nick, rank)
 
         
-clt_location = {}
-channels = {"HUB":{}}
+clients = dict()
+channels = {"HUB":[]}
 channels_names = {"HUB"}
-nicks = [] 
+nicks = set()
 sockets = []
 guest = 1
 #-----------------------------------------------------
@@ -35,74 +32,93 @@ def log(data):
     f.write(str(datetime.datetime.now())+"  :  "+data)
     f.close()
 
-def send_channel(string, clt_sender): #send to all users of a channel -- work in progress
-    log(string + " IN " + clt_location[clt_sender] + "\n")
+def send_channel(string, clt_sender, self=False):
+    log(string + " IN " + clients[clt_sender][3] + "\n")
     string += "\n"
-    for i in clt_location[clt_sender]:
+    for i in channels[clients[clt_sender][3]]:
         if(i != clt_sender):
             i.send(string.encode())
+    if(self):
+        clt_sender.send(string.encode())
     
 
 def send(string, dest, defined = True):
     name = str(dest)
     if(defined):
-        name = channels[clt_location[dest]][dest][1]
+        name = clients[dest][1]
     log(string+" TO "+ name + "\n")
     string += "\n"
     dest.send(string.encode())
 
-def send_all(string, clt_sender):
+def send_all(string, clt_sender, self=False):
     log(string + "\n")
     string += "\n"
     for i in sockets:
         if(i != clt_sender):
             i.send(string.encode())
+    if(self):
+        clt_sender.send(string.encode())
     
 #-----------------------------------------------------
 def picrom_new_co(clt, addr):
     global guest
     sockets.append(clt)
-    if guest < sys.maxsize:#set default nick to newcomers
+    if guest < sys.maxsize:                                     #set default nick to newcomers
         name = "Guest" + str(guest)
         guest += 1
-        channels["HUB"][clt] = (addr[0], name, 0)
-        clt_location[clt] = "HUB"
-        send(("CONNECT " + name), clt)
-        send_all(("CONNECT " + name), clt)
-        nicks.append(name)
+        clients[clt] = [addr[0], name, 0, "HUB"]
+        channels["HUB"].append(clt)
+        send_all(("CONNECT " + name), clt, True)
+        nicks.add(name)
     else:
-        send("ERR 7", clt, False)
-
-
-
-
-
-    '''        
-def picrom_join(clt,args):
-    channelName = args[0]                               #the name of the channel he wants to join
-    if(channelName == "HUB"):
-        
-        currentChannel = clt_location[clt]                  #the channel where he's coming from
-        this_client = channels[currentChannel][clt]         #(ip,nick)
-        client_nick = this_client[1]
-
-    del channels[currentChannel][clt]                   #we delete him from his current channel
-    
-    channels[channelName][clt]=this_client              #we add him to his new channel
-    clt_location[clt] = channelName                     #we change the client's location
-    
-    currentAdmin = channels[channelName]
-    data = "JOIN "+client_nick+
-'''
-
+        send("ERR 9", clt, False)
 
 
 def picrom_bye(clt):
-    send_all("BYE " + channels["HUB"][clt][1], clt)
-    sockets.remove(clt)
-    nicks.remove(channels["HUB"][clt][1])
-    channels["HUB"].pop(clt)
-    clt.close()
+    if(clients[clt][3] == "HUB"):                                                 
+        send_all("BYE " + clients[clt][1], clt)
+        sockets.remove(clt)
+        nicks.remove(clients[clt][1])
+        channels["HUB"].remove(clt)
+        clients.pop(clt)
+        clt.close()
+    else:
+        send("ERR 11", clt)
+
+
+        
+def picrom_join(clt,args):
+    global channels_names
+    if (len(args) < 1):
+        send("ERR 9", clt)
+    else:
+        channelName = args[0]                                   #the name of the channel he wants to join
+        if(channelName == "HUB"):                               #rare case if try to join special channel "HUB"
+            send("ERR 10", clt)
+            return
+        if(clients[clt][3] == "HUB"):
+            
+            channels["HUB"].remove(clt)                           
+            existing = channelName in channels_names
+            
+            if(existing):
+                channels[channelName].add(clt)
+            else:
+                channels[channelName] = {clt}
+                channels_names.add(channelName)
+                
+            clients[clt][3] = channelName
+                
+            #send information, client can know with admin rank if the channel was created
+            send_channel(("JOIN " + ("0 " if existing else "1 ") + clients[clt][1]), clt, True)
+
+        else:
+            send("ERR 5", clt)
+
+
+
+
+
 
 '''
 
