@@ -36,20 +36,24 @@
 - REN (new_channel_name)
 
 ## Protocol commands (Serv to Client):
-- MSG (R) (nick) (message)
-- ERR (code)
-- NICK (R) (oldNick) (newNick)
-- CONNECT (firstNick)
-- LIST (channel1) ... (channelN)
-- JOIN (R) (newCommerNick)
-- WHO (R)(client1) ... (R)(clientN)
-- PRV_MSG (R) (nick) (message)
-- LEAVE (R) (nick)
-- KICK (adminNick) (R) (nick)
-- KILL (adminNick) (R) (nick)
-- BAN (adminNick) (R) (nick)
+- (C) MSG (R) (nick) (message)
+- (B) ERR (code)
+- (A) NICK (R) (oldNick) (newNick)
+- (A) CONNECT (firstNick)
+- (B) LIST (channel1) ... (channelN)
+- (C) JOIN (R) (newCommerNick)
+- (B) WHO (R)(client1) ... (R)(clientN)
+- (B) PRV_MSG (R) (nick) (message)
+- (C) LEAVE (R) (nick)
+- (A) BYE (R) (nick)
+- (C) KICK (adminNick) (R) (nick)
+- (A) KILL (adminNick) (R) (nick)
+- (A) BAN (adminNick) (R) (nick)
 
 With (R) : rank, 0 if normal, 1 if admin
+(A) server command send to all
+(C) server command send to channel
+(B) server command send to current client
 
 ## Possible server errors:
 - ERR 0  wrong command
@@ -61,3 +65,4 @@ With (R) : rank, 0 if normal, 1 if admin
 - ERR 6  unexisting or closed channel
 - ERR 7  limit of connexions reached
 - ERR 8  channel name already used
+- ERR 9 wrong args
