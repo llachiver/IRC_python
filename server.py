@@ -146,10 +146,18 @@ def picrom_nick(clt,args):
     nicks.add(newN)
     send_all(("NICK " + str(clients[clt][2]) + " " + oldN + " " + newN), clt, True)
     
+def picrom_who(clt):
+    if(clients[clt][3] == "HUB"):
+        send("ERR 5", clt)
+        return
+    string = "WHO"
+    for i in channels[clients[clt][3]]:
+        string += " " + str(clients[i][2]) + " "+ clients[i][1]
+    send(string, clt)
 
 
 '''
-def picrom_who(clt):
+
 def picrom_list(clt):
 def picrom_kick(clt,args):
 def picrom_ren(clt,args):
