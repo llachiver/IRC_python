@@ -165,11 +165,33 @@ def picrom_list(clt):
             string += " " + i
     send(string, clt)
 
+
+def picrom_ren(clt,args):
+    if (len(args) < 1):
+        send("ERR 9", clt)
+        return
+    if(clients[clt][3] == "HUB"):
+        send("ERR 5", clt)
+        return
+    oldN = clients[clt][3]
+    newN = args[0]
+    if(newN in channels_names):
+        send("ERR 8", clt)
+        return
+    for i in channels[clients[clt][3]]:
+        clients[i][3] = newN
+    channels_names.remove(oldN)
+    channels_names.add(newN)
+    channels[newN] = channels.pop(oldN)
+    send_channel(("REN " + str(clients[clt][2]) + " " + clients[clt][1] + " " + oldN + " " + newN), clt, True)
+
+
+
 '''
 
 
 def picrom_kick(clt,args):
-def picrom_ren(clt,args):
+
 def picrom_leave(clt):
 '''
 #starting server

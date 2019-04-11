@@ -49,11 +49,16 @@
 - (C) KICK (adminNick) (R) (nick)
 - (A) KILL (adminNick) (R) (nick)
 - (A) BAN (adminNick) (R) (nick)
+- (A) REN (R) (nick) (oldName) (newName)
 
 With (R) : rank, 0 if normal, 1 if admin
+
 (A) server command send to all
+
 (C) server command send to channel
+
 (B) server command send to current client
+
 
 ## Possible server errors:
 - ERR 0  wrong command
