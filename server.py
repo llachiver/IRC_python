@@ -106,6 +106,7 @@ def picrom_join(clt,args):
             else:
                 channels[channelName] = {clt}
                 channels_names.add(channelName)
+                clients[clt][2] = 1
                 
             clients[clt][3] = channelName
                 
@@ -116,8 +117,13 @@ def picrom_join(clt,args):
             send("ERR 5", clt)
 
 
-
-
+def picrom_msg(clt,args):
+    if(clients[clt][3] != "HUB"):
+        message = ' '.join(word for word in args)
+        rank = clients[clt][2]
+        send_channel("MSG "  + str(clients[clt][2]) + " " + clients[clt][1] +" "+message,clt)
+    else:
+        send("ERR 5", clt)
 
 
 '''
