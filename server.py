@@ -118,22 +118,42 @@ def picrom_join(clt,args):
 
 
 def picrom_msg(clt,args):
-    if(clients[clt][3] != "HUB"):
-        message = ' '.join(word for word in args)
-        rank = clients[clt][2]
-        send_channel("MSG "  + str(clients[clt][2]) + " " + clients[clt][1] +" "+message,clt)
-    else:
+    if (len(args) < 1):
+        send("ERR 9", clt)
+        return
+    if(clients[clt][3] == "HUB"):
         send("ERR 5", clt)
+        return
+    message = ' '.join(word for word in args)
+    rank = clients[clt][2]
+    send_channel("MSG "  + str(clients[clt][2]) + " " + clients[clt][1] +" "+message,clt)
+    
+
+
+
+
+def picrom_nick(clt,args):
+    if (len(args) < 1):
+        send("ERR 9", clt)
+        return
+    oldN = clients[clt][1]
+    newN = args[0]
+    if(newN in nicks):
+        send("ERR 3", clt)
+        return
+    clients[clt][1] = newN
+    nicks.remove(oldN)
+    nicks.add(newN)
+    send_all(("NICK " + str(clients[clt][2]) + " " + oldN + " " + newN), clt, True)
+    
 
 
 '''
-
-def picrom_msg(clt,args):
-def picrom_nick(clt,args):
-def picrom_list(clt,args):
-def picrom_kill(clt,args):
-def picrom_ban(clt,args):
-
+def picrom_who(clt):
+def picrom_list(clt):
+def picrom_kick(clt,args):
+def picrom_ren(clt,args):
+def picrom_leave(clt):
 '''
 #starting server
 #-----------------------------------------------------
@@ -172,17 +192,21 @@ while(True):
                     args = words[1:]
 
                 if(command == "JOIN"):
-                    picrom_join(s_clt,args)
+                    picrom_join(s_clt, args)
                 elif(command == "MSG"):
-                    picrom_msg(s_clt,args)
+                    picrom_msg(s_clt, args)
                 elif(command == "NICK"):
-                    picrom_nick(s_clt)
+                    picrom_nick(s_clt, args)
                 elif(command == "LIST"):
                     picrom_list(s_clt)
-                elif(command == "KILL"):
-                    picrom_kill(s_clt,args)
-                elif(command == "BAN"):
-                    picrom_ban(s_clt,args)
+                elif(command == "WHO"):
+                    picrom_who(s_clt)
+                elif(command == "KICK"):
+                    picrom_kill(s_clt, args)
+                elif(command == "REN"):
+                    picrom_ren(s_clt, args)
+                elif(command == "LEAVE"):
+                    picrom_leave(s_clt)
                 elif(command == "BYE"):
                     picrom_bye(s_clt)
 
