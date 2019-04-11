@@ -155,10 +155,19 @@ def picrom_who(clt):
         string += " " + str(clients[i][2]) + " "+ clients[i][1]
     send(string, clt)
 
+def picrom_list(clt):
+    if(clients[clt][3] != "HUB"):
+        send("ERR 5", clt)
+        return
+    string = "LIST"
+    for i in channels:
+        if(i != "HUB"):
+            string += " " + i
+    send(string, clt)
 
 '''
 
-def picrom_list(clt):
+
 def picrom_kick(clt,args):
 def picrom_ren(clt,args):
 def picrom_leave(clt):
