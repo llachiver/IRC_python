@@ -167,6 +167,9 @@ def picrom_list(clt):
 
 
 def picrom_ren(clt,args):
+    if (clients[clt][2] == 0):
+        send("ERR 1", clt)
+        return
     if (len(args) < 1):
         send("ERR 9", clt)
         return
@@ -187,10 +190,13 @@ def picrom_ren(clt,args):
 
 
 
+    
+
+
 '''
 
-
 def picrom_kick(clt,args):
+
 
 def picrom_leave(clt):
 '''
