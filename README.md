@@ -4,58 +4,69 @@
 
 ### Default port : 1459
 
-
+# PICROM Client:
 ## Available commands:
-
-- /nick (nick)
-- /list (hub only)
-- /join (channelName) (hub only)
-- /who
-- /prv_msg (nick)
-- /leave
-- /bye (hub only)
+- /LIST
+- /JOIN (channelName)
+- /LEAVE
+- /WHO
+- (message)
+- /MSG (nick) (private message)
+- /BYE
+- /KICK (nick)
+- /NICK (newnick)
 
 ## Admins commands:
-- /kick (nick)
-- /kill (nick)
-- /ban (nick)
+- /KILL (nick)
+- /REN (newName)
+
+
+
 
 # PICROM Protocol:
 ## Protocol commands (Client to Serv):
-- /LIST: list all available channels
-- /JOIN (channel): join (or create) a channel
-- /LEAVE: leave current channel
-- /WHO: list users in current channel
-- (message): send a message in current channel
-- /MSG (nick) (message): send a private message in current channel
-- /BYE: disconnect from server
-- /KICK (nick): kick user from current channel [admin]
-- /REN (channel): change the current channel name [admin]
+- (I) MSG (message)
+- (I) PRV_MSG (nick) (message)
+- (H) LIST
+- (H) JOIN (channelname)
+- (I) KICK (nick)
+- (I) REN (new_channel_name)
+- (I) WHO
+- (I) LEAVE
+- (H) BYE
+- (E) NICK (nick)
+
+(E) Everywhere
+
+(H) Hub only
+
+(I) Channel Only
 
 ## Protocol commands (Serv to Client):
-- (C) MSG (R) (nick) (message)
 - (B) ERR (code)
-- (A) NICK (R) (oldNick) (newNick)
-- (A) CONNECT (firstNick)
+- (AS)CONNECT (firstNick)
+- (C) MSG (R) (nick) (message)
+- (T) PRV_MSG (R) (nick) (message)
 - (B) LIST (channel1) ... (channelN)
-- (C) JOIN (R) (newCommerNick)
+- (CS)JOIN (R) (newCommerNick)
+- (CS)KICK (adminNick) (R) (nick)
+- (AS)REN (R) (nick) (oldName) (newName)
 - (B) WHO (R)(client1) ... (R)(clientN)
-- (B) PRV_MSG (R) (nick) (message)
-- (C) LEAVE (R) (nick)
+- (CS) LEAVE (R) (nick)
 - (A) BYE (nick)
-- (C) KICK (adminNick) (R) (nick)
-- (A) KILL (adminNick) (R) (nick)
-- (A) BAN (adminNick) (R) (nick)
-- (A) REN (R) (nick) (oldName) (newName)
+- (AS)NICK (R) (oldNick) (newNick)
 
 With (R) : rank, 0 if normal, 1 if admin
 
-(A) server command send to all
+(A) server command send to all except requester
 
-(C) server command send to channel
+(C) server command send to channel except requester
 
-(B) server command send to current client
+(B) server command send to requester
 
+(T) server command send to target client
+
+(S) if server command send also to requester
 
 ## Possible server errors:
 - ERR 0  wrong command
