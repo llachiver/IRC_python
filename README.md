@@ -23,14 +23,14 @@
 # PICROM Protocol:
 ## Protocol commands (Client to Serv):
 - /LIST: list all available channels
-- /JOIN <channel>: join (or create) a channel
+- /JOIN (channel): join (or create) a channel
 - /LEAVE: leave current channel
 - /WHO: list users in current channel
-- <message>: send a message in current channel
-- /MSG <nick> <message>: send a private message in current channel
+- (message): send a message in current channel
+- /MSG (nick) (message): send a private message in current channel
 - /BYE: disconnect from server
-- /KICK <nick>: kick user from current channel [admin]
-- /REN <channel>: change the current channel name [admin]
+- /KICK (nick): kick user from current channel [admin]
+- /REN (channel): change the current channel name [admin]
 
 ## Protocol commands (Serv to Client):
 - (C) MSG (R) (nick) (message)
