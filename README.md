@@ -13,11 +13,10 @@
 - (message)
 - /MSG (nick) (private message)
 - /BYE
-- /KICK (nick)
-- /NICK (newnick)
+- /NICK (newNick)
 
 ## Admins commands:
-- /KILL (nick)
+- /KICK (nick)
 - /REN (newName)
 
 
@@ -50,7 +49,7 @@
 - (B) LIST (channel1) ... (channelN)
 - (CS)JOIN (R) (newCommerNick)
 - (CS)KICK (adminNick) (R) (nick)
-- (AS)REN (R) (nick) (oldName) (newName)
+- (CS)REN (adminNick) (oldName) (newName)
 - (B) WHO (R)(client1) ... (R)(clientN)
 - (CS) LEAVE (R) (nick)
 - (A) BYE (nick)
@@ -79,4 +78,3 @@ With (R) : rank, 0 if normal, 1 if admin
 - ERR 8  channel name already used
 - ERR 9 wrong args
 - ERR 10 try to join HUB lol
-- ERR 11 can't BYE in channel

@@ -58,9 +58,15 @@ def send_all(string, clt_sender, self=False):
             i.send(string.encode())
     if(self):
         clt_sender.send(string.encode())
+
+def find_soc_from_nick(nick, chan):
+    for i in channels[chan]:
+        if(clients[i][1] == nick):
+            return i
+    return None
     
 #-----------------------------------------------------
-def picrom_new_co(clt, addr):
+def picrom_connect(clt, addr):
     global guest
     sockets.append(clt)
     if guest < sys.maxsize:                                     #set default nick to newcomers
@@ -83,7 +89,7 @@ def picrom_bye(clt):
         clients.pop(clt)
         clt.close()
     else:
-        send("ERR 11", clt)
+        send("ERR 5", clt)
 
 
         
@@ -102,9 +108,9 @@ def picrom_join(clt,args):
             existing = channelName in channels_names
             
             if(existing):
-                channels[channelName].add(clt)
+                channels[channelName].append(clt)
             else:
-                channels[channelName] = {clt}
+                channels[channelName] = [clt]
                 channels_names.add(channelName)
                 clients[clt][2] = 1
                 
@@ -186,18 +192,41 @@ def picrom_ren(clt,args):
     channels_names.remove(oldN)
     channels_names.add(newN)
     channels[newN] = channels.pop(oldN)
-    send_channel(("REN " + str(clients[clt][2]) + " " + clients[clt][1] + " " + oldN + " " + newN), clt, True)
+    send_channel(("REN " + clients[clt][1] + " " + oldN + " " + newN), clt, True)
 
 
-
+def picrom_kick(clt,args):
+    if (clients[clt][2] == 0):
+        send("ERR 1", clt)
+        return
+    if (len(args) < 1):
+        send("ERR 9", clt)
+        return
+    if(clients[clt][3] == "HUB"):
+        send("ERR 5", clt)
+        return
+    target = args[0]
+    if(target == clients[clt][1]):
+        send("ERR 2", clt)
+        return
+    targetSoc = find_soc_from_nick(target, clients[clt][3])
+    if(targetSoc == None):
+        send("ERR 4", clt)
+        return
+    
+    send_channel(("KICK " + clients[clt][1] + " " + str(clients[targetSoc][2]) + " " + clients[targetSoc][1]), clt, True)
+    clients[targetSoc][3] = "HUB"
+    clients[targetSoc][2] = 0
+    channels["HUB"].append(targetSoc)
+    channels[clients[clt][3]].remove(targetSoc)
     
 
 
 '''
 
-def picrom_kick(clt,args):
 
 
+def picrom_prv_msg(clt, args):
 def picrom_leave(clt):
 '''
 #starting server
@@ -219,7 +248,7 @@ while(True):
         if (s_clt == serverSoc): #case of new connection
             
             (soc,addr) = serverSoc.accept()
-            picrom_new_co(soc, addr)
+            picrom_connect(soc, addr)
 
 
         else: #the client is connected
@@ -240,6 +269,8 @@ while(True):
                     picrom_join(s_clt, args)
                 elif(command == "MSG"):
                     picrom_msg(s_clt, args)
+                elif(command == "PRV_MSG"):
+                    picrom_prv_msg(clt, args)
                 elif(command == "NICK"):
                     picrom_nick(s_clt, args)
                 elif(command == "LIST"):
@@ -247,7 +278,7 @@ while(True):
                 elif(command == "WHO"):
                     picrom_who(s_clt)
                 elif(command == "KICK"):
-                    picrom_kill(s_clt, args)
+                    picrom_kick(s_clt, args)
                 elif(command == "REN"):
                     picrom_ren(s_clt, args)
                 elif(command == "LEAVE"):
