@@ -74,7 +74,7 @@ With (R) : rank, 0 if normal, 1 if admin
 - ERR 3  nick already used
 - ERR 4  selected user not on the channel
 - ERR 5  unauthorized command (go to HUB or join a channel)
-- ERR 7  limit of connexions reached
+- ERR 7  Need do NICK command before
 - ERR 8  channel name already used
 - ERR 9 wrong args
 - ERR 10 try to join HUB lol

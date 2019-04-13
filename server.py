@@ -120,8 +120,13 @@ def picrom_connect(clt, nick):
 
 
 def picrom_bye(clt):
-    send_all("BYE " + clients[clt][1], clt)
     sockets.remove(clt)
+    
+    if(clt in waiting_room): #case if the disconnected is in the wating room
+        del waiting_room[clt]
+        return
+
+    send_all("BYE " + clients[clt][1], clt)
     nicks.remove(clients[clt][1])
     channels[clients[clt][3]].remove(clt)
     clients.pop(clt)
@@ -241,9 +246,11 @@ def picrom_kick(clt,args):
         return
 
 
-    clt_change_channel(targetSoc,"HUB")
     
     send_channel(("KICK " + clients[clt][1] + " " + str(clients[targetSoc][2]) + " " + clients[targetSoc][1]), clt, True)
+    clt_change_channel(targetSoc,"HUB")
+    
+    
     
 
 
@@ -258,11 +265,7 @@ def picrom_kick(clt,args):
 
 
 def picrom_leave(clt):
-    
-    #nick = clients[clt][1]
-    location = clients[clt][3]
-    
-    if(location == "HUB"):
+    if(clients[clt][3] == "HUB"):
         send("ERR 5", clt)
         return
 
@@ -317,12 +320,11 @@ while(True):
                     if (command == "NICK"):
                         nick = words[1]
                         if(nick in nicks):              #nick already used
-                            send("ERR 3",s_clt)
-                            s_clt.send(str.encode("NICK-REQUEST\n"))
+                            send("ERR 3",s_clt, False)
                         else:
                             picrom_connect(s_clt,nick)
                     else:
-                        s_clt.send(str.encode("NICK-REQUEST\n"))
+                        send("ERR 7",s_clt, False)
 
                 else:
                     if(command == "JOIN"):
@@ -350,6 +352,5 @@ while(True):
                             picrom_bye(s_clt)
                     else:
                         send("ERR 0", s_clt)                #unknown command
-                    print("FIN")
                
                     
