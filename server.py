@@ -61,7 +61,7 @@ def send(string, dest, defined = True):
 def send_all(string, clt_sender, self=False):
     log(string + "\n")
     string += "\n"
-    for i in sockets:
+    for i in clients:
         if(i != clt_sender):
             i.send(string.encode())
     if(self):
@@ -78,34 +78,41 @@ def find_soc_from_nick(nick, chan):
     return None
 
 
-def clt_change_channel(clt,target_channel):
-    clt_tuple = clients[clt]                    #IP,nick,rank,location
-    current_channel = clt_tuple[3]
-    channels[current_channel].remove(clt)
-
-    if (current_channel != "HUB"):
-        if (channels[current_channel] == []):       #if the current channel becomes empty
-            del channels[current_channel]
-            channels_names.remove(current_channel)
-        else:
-            if (clt_tuple[2] == 1):                     #if he's the admin of the channel
-                channels[current_channel]               #the first connected client becomes the admin
-                s = next(iter(channels[current_channel][0]))
-                clients[s][2] = 1
-
-    if(target_channel == "HUB"):
-        clt_tuple[2] = 0                      #we can't be admin in the HUB
-        
+def clt_change_channel(clt,new_channel):
     
-    if (target_channel in channels_names):       #if the channel already exists
-        channels[target_channel].append(clt)
+    
+    old_channel = clients[clt][3]
+    clients[clt][3] = new_channel
+    channels[old_channel].remove(clt)
+
+    #[diffuseClient, (newAdmin)]
+    result = [clt]
+
+    #exit a channel:
+    if (old_channel != "HUB"):
+        if (channels[old_channel] == []):       #if the old channel becomes empty
+            del channels[old_channel]
+            channels_names.remove(old_channel)
+            result[0] = None
+        else:
+            if (clients[clt][2] == 1):                 #if he's the admin of the channel
+                clients[channels[old_channel][0]][2] = 1
+                result.append(clients[channels[old_channel][0]][1])
+            result[0] = channels[old_channel][0]
+    
+    clients[clt][2] = 0                      #we can't be admin in the HUB
+
+    #enter in a channel:
+    if (new_channel in channels_names):       #if the channel already exists
+        channels[new_channel].append(clt)
     else:                                       #else it is created
-        channels[target_channel] = [clt]
-        channels_names.add(target_channel)
-        clt_tuple[2] = 1                     # the client becomes admin
- 
-                
-    clt_tuple[3] = target_channel
+        channels[new_channel] = [clt]
+        channels_names.add(new_channel)
+        clients[clt][2] = 1                     # the client becomes admin    
+
+    
+    
+    return result
     
 #--------------- PICROM FONCTIONS ----------------------
     
@@ -113,19 +120,20 @@ def picrom_connect(clt, nick):
     addr = waiting_room[clt]
     clients[clt] = [addr[0], nick, 0, "HUB"]
     channels["HUB"].append(clt)
-    send_all(("CONNECT " + nick), clt, True)
     nicks.add(nick)
     del waiting_room[clt]
+    
+    send_all(("CONNECT " + nick), clt, True)
 
 
 
 def picrom_bye(clt):
     sockets.remove(clt)
-    
+
     if(clt in waiting_room): #case if the disconnected is in the wating room
         del waiting_room[clt]
         return
-
+    
     send_all("BYE " + clients[clt][1], clt)
     nicks.remove(clients[clt][1])
     channels[clients[clt][3]].remove(clt)
@@ -166,6 +174,7 @@ def picrom_msg(clt,args):
         return
     message = ' '.join(word for word in args)
     rank = clients[clt][2]
+    
     send_channel("MSG "  + str(clients[clt][2]) + " " + clients[clt][1] +" "+message,clt)
     
 
@@ -184,6 +193,7 @@ def picrom_nick(clt,args):
     clients[clt][1] = newN
     nicks.remove(oldN)
     nicks.add(newN)
+    
     send_all(("NICK " + str(clients[clt][2]) + " " + oldN + " " + newN), clt, True)
     
 def picrom_who(clt):
@@ -203,6 +213,7 @@ def picrom_list(clt):
     for i in channels:
         if(i != "HUB"):
             string += " " + i
+    
     send(string, clt)
 
 
@@ -226,6 +237,7 @@ def picrom_ren(clt,args):
     channels_names.remove(oldN)
     channels_names.add(newN)
     channels[newN] = channels.pop(oldN)
+    
     send_channel(("REN " + clients[clt][1] + " " + oldN + " " + newN), clt, True)
 
 
@@ -245,20 +257,17 @@ def picrom_kick(clt,args):
         send("ERR 4", clt)
         return
 
-
-    
-    send_channel(("KICK " + clients[clt][1] + " " + str(clients[targetSoc][2]) + " " + clients[targetSoc][1]), clt, True)
     clt_change_channel(targetSoc,"HUB")
     
+    send_channel(("KICK " + clients[clt][1] + " " + str(clients[targetSoc][2]) + " " + clients[targetSoc][1]), clt, True)
     
     
-
-
-
-
-
     
     
+    
+    
+    
+
 
 
 #def picrom_prv_msg(clt, args):
@@ -269,11 +278,18 @@ def picrom_leave(clt):
         send("ERR 5", clt)
         return
 
-    send_channel(("LEAVE " + str(clients[clt][2]) + " " + clients[clt][1]), clt, True)
-    clt_change_channel(clt,"HUB")
-        
     
-
+    result = clt_change_channel(clt,"HUB")
+    if(result[0] == None):
+        send(("LEAVE 1 " + clients[clt][1]), clt, True) #send only to exiter
+    else:
+        if(len(result) == 1):
+            send_channel(("LEAVE 0 " + clients[clt][1]), result[0], True)
+            send(("LEAVE 0 " + clients[clt][1]), clt, True)
+        else:
+            send_channel(("LEAVE 1 "+ clients[clt][1] + " " + result[1] ), result[0], True)
+            send(("LEAVE 1 "+ clients[clt][1] + " " + result[1] ), clt, True)
+    
 
 
 #starting server
@@ -318,11 +334,14 @@ while(True):
 
                 if(s_clt in waiting_room):
                     if (command == "NICK"):
-                        nick = words[1]
-                        if(nick in nicks):              #nick already used
-                            send("ERR 3",s_clt, False)
+                        if (len(args) > 0):
+                            nick = args[0]
+                            if(nick in nicks):              #nick already used
+                                send("ERR 3",s_clt, False)
+                            else:
+                                picrom_connect(s_clt,nick)
                         else:
-                            picrom_connect(s_clt,nick)
+                            send("ERR 9",s_clt, False)
                     else:
                         send("ERR 7",s_clt, False)
 

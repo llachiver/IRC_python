@@ -51,7 +51,7 @@
 - (CS)KICK (adminNick) (R) (nick)
 - (CS)REN (adminNick) (oldName) (newName)
 - (B) WHO (R)(client1) ... (R)(clientN)
-- (CS) LEAVE (R) (nick)
+- (Cs) LEAVE (R) (nick) (newAdmin if (R) == 1)
 - (A) BYE (nick)
 - (AS)NICK (R) (oldNick) (newNick)
 
@@ -65,7 +65,7 @@ With (R) : rank, 0 if normal, 1 if admin
 
 (T) server command send to target client
 
-(S) if server command send also to requester
+(S) if server command send also to requester ((s) if send with a second command)
 
 ## Possible server errors:
 - ERR 0  wrong command
