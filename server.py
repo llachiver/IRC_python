@@ -141,8 +141,12 @@ def picrom_bye(clt):
     sockets.remove(clt)
 
     if(clt in waiting_room): #case if the disconnected is in the waiting room
+        print("Leave the waiting_room: " + waiting_room[clt])
         del waiting_room[clt]
         return
+
+    if(clients[clt][3] != "HUB"): #case if connexion cutted when client is in a channel
+        picrom_leave(clt)
     
     send_all("BYE " + clients[clt][1], clt)
     nicks.remove(clients[clt][1])
@@ -340,6 +344,7 @@ while(True):
             (soc,addr) = serverSoc.accept()
             waiting_room[soc] = addr[0]
             sockets.append(soc)
+            print("Join the waiting_room: " + addr[0])
 
 
         else: #the client is connected
