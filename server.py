@@ -3,6 +3,19 @@ import select
 import sys
 import datetime
 
+'''
+IRL-like chat server
+
+using PICROM Protocol
+
+by PIcachoc & ROMAINPC
+
+For more informations about protocol:
+see README file at:
+https://github.com/picachoc/IRC_python
+
+
+'''
 
 PORT = 1459 #default port for the chat
 HOST = ''
@@ -169,14 +182,32 @@ def picrom_msg(clt,args):
         return
     
     message = ' '.join(word for word in args)
-    rank = clients[clt][2]
     
     send_channel("MSG "  + str(clients[clt][2]) + " " + clients[clt][1] +" "+message,clt)
     
 
 
 
-#def picrom_prv_msg(clt, args):
+def picrom_prv_msg(clt, args):
+    if (len(args) < 2):
+        send("ERR 9", clt)
+        return
+    if(clients[clt][3] == "HUB"):
+        send("ERR 5", clt)
+        return
+    
+    target = args[0]
+    if(target == clients[clt][1]):   #auto-msg
+        send("ERR 2", clt)
+        return
+    targetSoc = find_soc_from_nick(target, clients[clt][3])
+    if(targetSoc == None):
+        send("ERR 4", clt)
+        return
+    
+    message = ' '.join(word for word in args[1:])
+    
+    send("PRV_MSG "  + str(clients[clt][2]) + " " + clients[clt][1] + " " +  message, targetSoc)
 
 
 
@@ -347,7 +378,7 @@ while(True):
                     elif(command == "MSG"):
                         picrom_msg(s_clt, args)
                     elif(command == "PRV_MSG"):
-                        picrom_prv_msg(clt, args)
+                        picrom_prv_msg(s_clt, args)
                     elif(command == "NICK"):
                         picrom_nick(s_clt, args)
                     elif(command == "LIST"):

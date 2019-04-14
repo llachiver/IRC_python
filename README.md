@@ -70,7 +70,7 @@ With (R) : rank, 0 if normal, 1 if admin
 ## Possible server errors:
 - ERR 0  wrong command
 - ERR 1  unauthorized command (need admin privilege)
-- ERR 2  Auto KILL/KICK/BAN
+- ERR 2  Auto KICK or PRV_MSG
 - ERR 3  nick already used
 - ERR 4  selected user not on the channel
 - ERR 5  unauthorized command (go to HUB or join a channel)
