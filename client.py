@@ -2,34 +2,39 @@ import socket
 import select
 import datetime
 import tkinter
+import sys
 
-'''if(len(sys.argv)==0):
-    printf("Error : please specify the chat's IP adress.")'''
-
-HOST = "::1" #the parameter of the program call will be the chat's IP adress
+HOST = 'bush' #the parameter of the program call will be the chat's IP adress
 PORT = 1459
-nick = "" #user's nickname
+nick = '' #user's nickname
 
-# Encode the client 
-def string_to_PICROM(string):
-    if(string[0]=='/'):
-        return (string)[1:].upper().encode() #we delete the '/' and turn the string into capital letters
-    return ('MSG'+string).upper().encode()
+#--------- CONNECTION -------------
+s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+s.connect((HOST, PORT))
 
+# Nickname loop
+while(nick == ''):
+    msg = input('Entrez votre nick : ')
+    if(msg!=''):
+        s.send(('NICK ' + msg).encode())
+        data = s.recv(1024)
+        command = data.decode().split()[0]
+        if(command == 'ERR'):
+            print('Pseudo deja utilise.')
+        else:
+            nick = msg
 
-def PICROM_to_string(data):
-    data.decode()
-
+#--------- MAIN LOOP -------------
+while(1):
+    (l,_,_) = select.select([s,sys.stdin],[],[])
     
-
-with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as s:
-    s.connect((HOST, PORT))
-    #The server gives us a first nick.
-    data = s.recv(1024)
-    nick = data.decode().split()[1]
-    print("Server "+HOST+". Welcome, "+nick+" !")
-    while(1):
-        msg=input(nick + ': ')
-        s.send(string_to_PICROM(msg)) 
-
-    print('Received', repr(data))
+    for i in l:
+        if(type(i) == socket.socket): #if we received sth from the socket
+            data = s.recv(1024)
+            print(str(data))
+        else:
+            s.send((sys.stdin.readline()).encode())
+            print(nick + ' > ' + sys.stdin.readline())
+            data = s.recv(1024)
+            print(str(data))
+    
