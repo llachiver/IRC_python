@@ -25,6 +25,9 @@ while(nick == ''):
             nick = msg
 
 #--------- MAIN LOOP -------------
+
+# tty.setraw(sys.stdin) -> désactiver entrée canonique (le message sera envoyé char par char)
+
 while(1):
     (l,_,_) = select.select([s,sys.stdin],[],[])
     
@@ -33,8 +36,6 @@ while(1):
             data = s.recv(1024)
             print(str(data))
         else:
-            s.send((sys.stdin.readline()).encode())
-            print(nick + ' > ' + sys.stdin.readline())
-            data = s.recv(1024)
-            print(str(data))
-    
+            msg = sys.stdin.readline()
+            s.send(msg.encode())
+            #print(nick + ' > ' + msg)
