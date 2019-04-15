@@ -5,6 +5,9 @@
 ### Default port : 1459
 
 # PICROM Client:
+
+Using Tkinter for the GUI: http://tkinter.fdex.eu/
+
 ## Available commands:
 - /LIST
 - /JOIN (channelName)
