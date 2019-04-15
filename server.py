@@ -148,7 +148,7 @@ def picrom_bye(clt):
         return
 
     if(clients[clt][3] != "HUB"): #case if connexion cutted when client is in a channel
-        picrom_leave(clt)
+        picrom_leave(clt, True)
     
     send_all("BYE " + clients[clt][1], clt)
     nicks.remove(clients[clt][1])
@@ -306,21 +306,24 @@ def picrom_kick(clt,args):
 
 
 
-def picrom_leave(clt):
+def picrom_leave(clt, brutal = False):
     if(clients[clt][3] == "HUB"):
         send("ERR 5", clt)
         return
 
     result = clt_change_channel(clt,"HUB")
     if(result[0] == None):
-        send(("LEAVE 1 " + clients[clt][1]), clt, True) #send only to exiter
+        if(not brutal): #case if it leave because it has rage quit
+            send(("LEAVE 1 " + clients[clt][1]), clt, True) #send only to exiter
     else:
         if(len(result) == 1):
             send_channel(("LEAVE 0 " + clients[clt][1]), result[0], True)
-            send(("LEAVE 0 " + clients[clt][1]), clt, True)
+            if(not brutal):
+                send(("LEAVE 0 " + clients[clt][1]), clt, True)
         else:
             send_channel(("LEAVE 1 "+ clients[clt][1] + " " + result[1] ), result[0], True)
-            send(("LEAVE 1 "+ clients[clt][1] + " " + result[1] ), clt, True)
+            if(not brutal):
+                send(("LEAVE 1 "+ clients[clt][1] + " " + result[1] ), clt, True)
     
 
 
@@ -340,7 +343,6 @@ while(True):
     
     #browse all connected sockets
     for s_clt in connected:
-        #print(clt_location[s_clt]);
         if (s_clt == serverSoc): #case of new connection
             
             (soc,addr) = serverSoc.accept()
@@ -350,8 +352,13 @@ while(True):
 
 
         else: #the client is connected
-            
-            line = s_clt.recv(1500)
+
+            line = ""
+            try:
+                line = s_clt.recv(1500)
+            except:
+                picrom_bye(s_clt)
+                break
             
             if(len(line) == 0): #if a client leaves the server by send void data
                 picrom_bye(s_clt)
