@@ -4,7 +4,7 @@ import sys
 import datetime
 
 '''
-IRL-like chat server
+IRC-like chat server
 
 using PICROM Protocol
 
