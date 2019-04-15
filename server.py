@@ -8,7 +8,7 @@ IRL-like chat server
 
 using PICROM Protocol
 
-by PIcachoc & ROMAINPC
+by Picachoc & ROMAINPC
 
 For more informations about protocol:
 see README file at:
@@ -143,7 +143,7 @@ def picrom_bye(clt):
     sockets.remove(clt)
 
     if(clt in waiting_room): #case if the disconnected is in the waiting room
-        print("Leave the waiting_room: " + waiting_room[clt])
+        log("Leave the waiting_room: " + waiting_room[clt] + "\n")
         del waiting_room[clt]
         return
 
@@ -330,6 +330,7 @@ serverSoc = socket.socket(socket.AF_INET6, socket.SOCK_STREAM, 0) #socket d'éco
 serverSoc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) #ferme la connection qd deconnexion
 serverSoc.bind((HOST, PORT))
 serverSoc.listen(1)
+log("<========= START SERVER =========>\n")
 #-----------------------------------------------------
     
 
@@ -345,7 +346,7 @@ while(True):
             (soc,addr) = serverSoc.accept()
             waiting_room[soc] = addr[0]
             sockets.append(soc)
-            print("Join the waiting_room: " + addr[0])
+            log("Join the waiting_room: " + addr[0] + "\n")
 
 
         else: #the client is connected
