@@ -63,9 +63,11 @@ def send_channel(string, clt_sender, self=False):
     
 #Send to a specific user
 def send(string, dest, defined = True):
-    name = str(dest)
+    name = ""
     if(defined):
         name = clients[dest][1]
+    else:
+        name = str(waiting_room[dest])
     log(string+" TO "+ name + "\n")
     string += "\n"
     dest.send(string.encode())
@@ -299,9 +301,8 @@ def picrom_kick(clt,args):
         send("ERR 4", clt)
         return
     
-    clt_change_channel(targetSoc,"HUB")
     send_channel(("KICK " + clients[clt][1] + " " + str(clients[targetSoc][2]) + " " + clients[targetSoc][1]), clt, True)
-    
+    clt_change_channel(targetSoc,"HUB")
 
 
 
