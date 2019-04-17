@@ -1,10 +1,10 @@
 import socket
 import select
 import datetime
-import tkinter
+import tty
 import sys
 
-HOST = 'bush' #the parameter of the program call will be the chat's IP adress
+HOST = 'localhost' #the parameter of the program call will be the chat's IP adress
 PORT = 1459
 nick = '' #user's nickname
 
@@ -27,7 +27,7 @@ while(nick == ''):
 #--------- MAIN LOOP -------------
 
 # tty.setraw(sys.stdin) -> désactiver entrée canonique (le message sera envoyé char par char)
-
+tty.setraw(sys.stdin)
 while(1):
     (l,_,_) = select.select([s,sys.stdin],[],[])
     
