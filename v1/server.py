@@ -143,7 +143,7 @@ def picrom_bye(clt):
     sockets.remove(clt)
 
     if(clt in waiting_room): #case if the disconnected is in the waiting room
-        log("Leave the waiting_room: " + waiting_room[clt] + "\n")
+        log(waiting_room[clt] + " leaved the waiting room.\n")
         del waiting_room[clt]
         return
 
@@ -348,7 +348,7 @@ while(True):
             (soc,addr) = serverSoc.accept()
             waiting_room[soc] = addr[0]
             sockets.append(soc)
-            log("Join the waiting_room: " + addr[0] + "\n")
+            log(addr[0] + " joined the waiting room.\n")
 
 
         else: #the client is connected

@@ -127,13 +127,7 @@ def clt_change_channel(clt,new_channel):
     return result
     
 #--------------- PICROM FONCTIONS ----------------------
-
-
-
-def picrom_help(clt):
-    send("Welcome to PICROM chat v0 !", clt)
-
-
+    
 def picrom_connect(clt, nick):
     addr = waiting_room[clt]
     clients[clt] = [addr[0], nick, 0, "HUB"]
@@ -149,7 +143,7 @@ def picrom_bye(clt):
     sockets.remove(clt)
 
     if(clt in waiting_room): #case if the disconnected is in the waiting room
-        log("Leave the waiting_room: " + waiting_room[clt] + "\n")
+        log(waiting_room[clt] + " leaved the waiting room.\n")
         del waiting_room[clt]
         return
 
@@ -347,6 +341,7 @@ while(True):
             except:
                 picrom_bye(s_clt)
                 break
+            
             if(len(line) == 0): #if a client leaves the server by send void data
                 picrom_bye(s_clt)
                 break
@@ -367,35 +362,34 @@ while(True):
                             if(nick in nicks):              #nick already used
                                 send("ERR 3",s_clt, False)
                             else:
-                                picrom_connect(s_clt,nick)
+                                picrom_connect(s_clt, nick)
                         else:
                             send("ERR 9",s_clt, False)
                     else:
                         send("ERR 7",s_clt, False)
 
-        
-                    if(command == "HELP"):
-                        picrom_msg(s_clt, args)
-                    elif(command == "LIST"):
-                        picrom_list(s_clt)
-                    elif(command == "JOIN"):
+                else:
+                    if(command == "JOIN"):
                         picrom_join(s_clt, args)
-                    elif(command == "LEAVE"):
-                        picrom_leave(s_clt)
-                    elif(command == "WHO"):
-                        picrom_who(s_clt)
+                    elif(command == "MSG"):
+                        picrom_msg(s_clt, args)
                     elif(command == "PRV_MSG"):
                         picrom_prv_msg(s_clt, args)
+                    elif(command == "LIST"):
+                        picrom_list(s_clt)
+                    elif(command == "WHO"):
+                        picrom_who(s_clt)
+                    elif(command == "KICK"):
+                        picrom_kick(s_clt, args)
+                    elif(command == "REN"):
+                        picrom_ren(s_clt, args)
+                    elif(command == "LEAVE"):
+                        picrom_leave(s_clt)
                     elif(command == "BYE"):
                         if(clients[s_clt][3] != "HUB"):
                             send("ERR 5",s_clt)
                         else:
                             picrom_bye(s_clt)
-                    elif(command == "KICK"):
-                        picrom_kick(s_clt, args)
-                    elif(command == "REN"):
-                        picrom_ren(s_clt, args)
-                    
                     else:
                         send("ERR 0", s_clt)                #unknown command
                
