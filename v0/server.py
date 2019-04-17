@@ -43,7 +43,7 @@ guest = 1
 #-----------------------------------------------------
 #Display and save server information
 def log(data):
-    f= open("log.txt","a+")
+    f= open("log.log","a+")
     print (str(datetime.datetime.now()),data[:-1])
     f.write(str(datetime.datetime.now())+"  :  "+data)
     f.close()
