@@ -50,7 +50,7 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (C) MSG (R) (nick) (message)
 - (T) PRV_MSG (R) (nick) (message)
 - (B) LIST (channel1) ... (channelN)
-- (CS)JOIN (R) (newCommerNick)
+- (CS)JOIN (channel) (R) (newCommerNick)
 - (CS)KICK (adminNick) (R) (nick)
 - (CS)REN (adminNick) (oldName) (newName)
 - (B) WHO (R)(client1) ... (R)(clientN)

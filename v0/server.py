@@ -10,7 +10,7 @@ using PICROM Protocol
 
 by Picachoc & ROMAINPC
 
-For more informations about protocol:
+For more information about protocol:
 see README file at:
 https://github.com/picachoc/IRC_python
 
@@ -175,7 +175,7 @@ def picrom_join(clt,args):
     
     clt_change_channel(clt,channelName)
     #send information, client can know with admin rank if the channel was created
-    send_channel(("JOIN " + str(clients[clt][2]) + " " + clients[clt][1]), clt, True)
+    send_channel(("JOIN " + channelName +" "+ str(clients[clt][2]) + " " + clients[clt][1]), clt, True)
         
 
 
