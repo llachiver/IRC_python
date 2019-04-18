@@ -24,6 +24,16 @@ https://github.com/picachoc/IRC_python
 
 HOST = '127.0.0.1' #the parameter of the program call will be the chat's IP adress
 PORT = 1459
+if(len(sys.argv) == 3):
+    try:
+        PORT = int(sys.argv[2])
+        HOST = sys.argv[1]
+    except:
+        print("Unreadable arg !")
+        PORT = 1459
+        HOST = '127.0.0.1'
+
+print("Connexion au serveur à l'adresse " + HOST + ":" + str(PORT))
 
 nick = '' #user's nickname
 channel = "HUB"

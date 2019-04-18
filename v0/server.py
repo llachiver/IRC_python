@@ -18,6 +18,12 @@ https://github.com/picachoc/IRC_python
 '''
 
 PORT = 1459 #default port for the chat
+if(len(sys.argv) == 2):
+    try:
+        PORT = int(sys.argv[1])
+    except:
+        print("Unreadable arg !")
+        PORT = 1459
 HOST = ''
 
 #Each channel gathers its own clients.
@@ -315,7 +321,7 @@ serverSoc = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0) #socket d'écou
 serverSoc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) #ferme la connection qd deconnexion
 serverSoc.bind((HOST, PORT))
 serverSoc.listen(1)
-log("<========= START SERVER =========>\n")
+log("<========= START SERVER on port "+ str(PORT) + " =========>\n")
 #-----------------------------------------------------
     
 
