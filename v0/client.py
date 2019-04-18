@@ -85,7 +85,7 @@ def send(msg,s):
     s.send(data.encode())
 
 
-def display_rank(char):
+def display_rank(char): #usefull function to quick generate admin symbol by reading rank integer provided by protocol.
     if(char == "1"):
         return " (*)"
     return ""
@@ -121,8 +121,26 @@ def display(data):
                 data = "Vous avez kické " + words[3] + display_rank(words[2]) + "."
             else:
                 data = words[1] + " (*) a kické "+ words[3] + display_rank(words[2]) + "."
+    elif(cmd == "REN"):
+        data = words[1] + " (*) a renommé le channel : " + words[2]+ " -> " + words[3]
+    elif(cmd == "WHO"):
+        string = "Utilisateurs sur le channel :"
+        for i in range(1, len(words), 2):
+            string += "\n- " + words[i+1] + display_rank(words[i]) 
+        data = string
+    elif(cmd == "LEAVE"):
+        if(words[2] == nick):
+            data = "Vous venez de quitter le channel."
+        else:
+            data = words[2] + " a quitté le channel."
+            if(words[1] == "1"):
+                if(words[3] == nick):
+                    data += " Vous devenez administrateur."
+                else:
+                    data += " " + words[3] +" devient administrateur."
+    elif(cmd == "BYE"):
+        data = words[1] + " a quitté le serveur."
     
-            
     print(data)
     
 #--------- CONNECTION -------------
@@ -153,7 +171,8 @@ while(1):
     for i in l:
         if(type(i) == socket.socket): #if we received sth from the socket
             data = s.recv(1024)
-            display(data.decode()[:-1])
+            if (len(data) != 0):
+                display(data.decode()[:-1])
         else:
             msg = sys.stdin.readline()
             send(msg,s)
