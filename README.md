@@ -27,16 +27,17 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 
 # PICROM Protocol:
 ## Protocol commands (Client to Serv):
-- (I) MSG (message)
+- (I) MSG (message) : send in current channel
 - (I) PRV_MSG (nick) (message)
-- (H) LIST
-- (H) JOIN (channelname)
+- (E) LIST
+- (E) JOIN (channelname) : (set the current channel also)
 - (I) KICK (nick)
 - (I) REN (new_channel_name)
 - (I) WHO
-- (I) LEAVE
-- (H) BYE
+- (I) LEAVE : (leave the current channel)
+- (H) BYE : (leave all channels if not done)
 - (E) NICK (nick)
+- (E) CURRENT (newCurrentChannel or void)
 
 (E) Everywhere
 
@@ -47,7 +48,7 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 ## Protocol commands (Serv to Client):
 - (B) ERR (code)
 - (AS)CONNECT (firstNick)
-- (C) MSG (R) (nick) (message)
+- (C) MSG (R) (nick) (message) : receive all MSG from all joined channels
 - (T) PRV_MSG (R) (nick) (message)
 - (B) LIST (channel1) ... (channelN)
 - (CS)JOIN (channel) (R) (newCommerNick)
@@ -57,6 +58,7 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (Cs) LEAVE (R) (nick) (newAdmin if (R) == 1)
 - (A) BYE (nick)
 - (AS)NICK (R) (oldNick) (newNick)
+- (B)CURRENT (currentChannel)
 
 With (R) : rank, 0 if normal, 1 if admin
 
@@ -70,6 +72,7 @@ With (R) : rank, 0 if normal, 1 if admin
 
 (S) if server command send also to requester ((s) if send with a second command)
 
+
 ## Possible server errors:
 - ERR 0  wrong command
 - ERR 1  unauthorized command (need admin privilege)
@@ -77,7 +80,9 @@ With (R) : rank, 0 if normal, 1 if admin
 - ERR 3  nick already used
 - ERR 4  selected user not on the channel
 - ERR 5  unauthorized command (go to HUB or join a channel)
+- ERR 6 you don't have joined this channel, can't CURRENT
 - ERR 7  Need do NICK command before
 - ERR 8  channel name already used
 - ERR 9 wrong args
-- ERR 10 try to join HUB lol
+- ERR 10 try to join or to current HUB lol
+- ERR 11 you already JOIN this channel or its your CURRENT channel

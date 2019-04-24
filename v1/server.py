@@ -30,7 +30,7 @@ HOST = ''
 
 #clients:
     #> type: dictionnary
-    #> client_socket -> [IP, nick, rank, location (string)]
+    #> client_socket -> [IP, nick, rank, current channel (string)]
 
 #channels:
     #> type: dictionnary
@@ -171,10 +171,10 @@ def picrom_join(clt,args):
     if (len(args) < 1):
         send("ERR 9", clt)
         return
-    if(current_location != "HUB"):
-        send("ERR 5", clt)
+    channelName = args[0]#the name of the channel he wants to join
+    if((channelName in channels) and (clt in channels[channelName])):
+        send("ERR 11", clt)
         return
-    channelName = args[0]                                   #the name of the channel he wants to join
     if(channelName == "HUB"):                               #rare case if try to join special channel "HUB"
         send("ERR 10", clt)
         return
@@ -236,9 +236,6 @@ def picrom_who(clt):
 
 
 def picrom_list(clt):
-    if(clients[clt][3] != "HUB"):
-        send("ERR 5", clt)
-        return
     string = "LIST"
     for i in channels:
         if(i != "HUB"):
@@ -312,7 +309,11 @@ def picrom_leave(clt, brutal = False):
             send_channel(("LEAVE 1 "+ clients[clt][1] + " " + result[1] ), result[0], True)
             if(not brutal):
                 send(("LEAVE 1 "+ clients[clt][1] + " " + result[1] ), clt, True)
-
+    #changing current channel:
+    for i in channels:
+        if(clt in channels[i]):
+            clients[clt][3] = i
+            return
 
 
 def picrom_nick(clt,args):
@@ -333,6 +334,20 @@ def picrom_nick(clt,args):
 
 
 
+def picrom_current(clt, args):
+    if(args != []): #client change his current channel, if args == [] client just check his current
+        target = args[0]
+        if((target in channels) and (not(clt in channels[target]))):
+            send("ERR 6", clt)
+            return
+        if(target == clients[clt][3]):
+            send("ERR 11", clt)
+            return
+        if(target == "HUB"):                               #rare case if try to join special channel "HUB"
+            send("ERR 10", clt)
+            return
+        clients[clt][3] = target
+    send("CURRENT " + clients[clt][3], clt)
 
 
 
@@ -419,6 +434,8 @@ while(True):
                             picrom_bye(s_clt)
                     elif(command == "NICK"):
                         picrom_nick(s_clt, args)
+                    elif(command == "CURRENT"):
+                        picrom_current(s_clt, args)
                     else:
                         send("ERR 0", s_clt)                #unknown command
                
