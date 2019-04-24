@@ -10,7 +10,7 @@ using PICROM Protocol
 
 by Picachoc & ROMAINPC
 
-For more informations about protocol:
+For more information about protocol:
 see README file at:
 https://github.com/picachoc/IRC_python
 
@@ -18,6 +18,12 @@ https://github.com/picachoc/IRC_python
 '''
 
 PORT = 1459 #default port for the chat
+if(len(sys.argv) == 2):
+    try:
+        PORT = int(sys.argv[1])
+    except:
+        print("Unreadable arg !")
+        PORT = 1459
 HOST = ''
 
 #Each channel gathers its own clients.
@@ -175,7 +181,7 @@ def picrom_join(clt,args):
     
     clt_change_channel(clt,channelName)
     #send information, client can know with admin rank if the channel was created
-    send_channel(("JOIN " + str(clients[clt][2]) + " " + clients[clt][1]), clt, True)
+    send_channel(("JOIN " + channelName +" "+ str(clients[clt][2]) + " " + clients[clt][1]), clt, True)
         
 
 
@@ -214,24 +220,6 @@ def picrom_prv_msg(clt, args):
     message = ' '.join(word for word in args[1:])
     
     send("PRV_MSG "  + str(clients[clt][2]) + " " + clients[clt][1] + " " +  message, targetSoc)
-
-
-
-def picrom_nick(clt,args):
-    if (len(args) < 1):
-        send("ERR 9", clt)
-        return
-    oldN = clients[clt][1]
-    newN = args[0]
-    if(newN in nicks):
-        send("ERR 3", clt)
-        return
-    
-    clients[clt][1] = newN
-    nicks.remove(oldN)
-    nicks.add(newN)
-    
-    send_all(("NICK " + str(clients[clt][2]) + " " + oldN + " " + newN), clt, True)
 
 
     
@@ -324,16 +312,37 @@ def picrom_leave(clt, brutal = False):
             send_channel(("LEAVE 1 "+ clients[clt][1] + " " + result[1] ), result[0], True)
             if(not brutal):
                 send(("LEAVE 1 "+ clients[clt][1] + " " + result[1] ), clt, True)
+
+
+
+def picrom_nick(clt,args):
+    if (len(args) < 1):
+        send("ERR 9", clt)
+        return
+    oldN = clients[clt][1]
+    newN = args[0]
+    if(newN in nicks):
+        send("ERR 3", clt)
+        return
     
+    clients[clt][1] = newN
+    nicks.remove(oldN)
+    nicks.add(newN)
+    
+    send_all(("NICK " + str(clients[clt][2]) + " " + oldN + " " + newN), clt, True)
+
+
+
+
 
 
 #starting server
 #-----------------------------------------------------
-serverSoc = socket.socket(socket.AF_INET6, socket.SOCK_STREAM, 0) #socket d'écoute
+serverSoc = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0) #socket d'écoute
 serverSoc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) #ferme la connection qd deconnexion
 serverSoc.bind((HOST, PORT))
 serverSoc.listen(1)
-log("<========= START SERVER =========>\n")
+log("<========= START SERVER on port "+ str(PORT) + " =========>\n")
 #-----------------------------------------------------
     
 
@@ -380,7 +389,7 @@ while(True):
                             if(nick in nicks):              #nick already used
                                 send("ERR 3",s_clt, False)
                             else:
-                                picrom_connect(s_clt,nick)
+                                picrom_connect(s_clt, nick)
                         else:
                             send("ERR 9",s_clt, False)
                     else:
@@ -393,8 +402,6 @@ while(True):
                         picrom_msg(s_clt, args)
                     elif(command == "PRV_MSG"):
                         picrom_prv_msg(s_clt, args)
-                    elif(command == "NICK"):
-                        picrom_nick(s_clt, args)
                     elif(command == "LIST"):
                         picrom_list(s_clt)
                     elif(command == "WHO"):
@@ -410,6 +417,8 @@ while(True):
                             send("ERR 5",s_clt)
                         else:
                             picrom_bye(s_clt)
+                    elif(command == "NICK"):
+                        picrom_nick(s_clt, args)
                     else:
                         send("ERR 0", s_clt)                #unknown command
                
