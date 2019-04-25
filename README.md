@@ -48,14 +48,14 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 ## Protocol commands (Serv to Client):
 - (B) ERR (code)
 - (AS)CONNECT (firstNick)
-- (C) MSG (R) (nick) (message) : receive all MSG from all joined channels
-- (T) PRV_MSG (R) (nick) (message)
+- (C) MSG (channel) (R) (nick) (message) : receive all MSG from all joined channels
+- (T) PRV_MSG (channel) (R) (nick) (message)
 - (B) LIST (channel1) ... (channelN)
 - (CS)JOIN (channel) (R) (newCommerNick)
-- (CS)KICK (adminNick) (R) (nick)
-- (CS)REN (adminNick) (oldName) (newName)
+- (CS)KICK (channel) (adminNick) (R) (nick)
+- (CS)REN (channel) (adminNick) (oldName) (newName)
 - (B) WHO (R)(client1) ... (R)(clientN)
-- (Cs) LEAVE (R) (nick) (newAdmin if (R) == 1)
+- (Cs) LEAVE (channel) (R) (nick) (newAdmin if (R) == 1)
 - (A) BYE (nick)
 - (AS)NICK (R) (oldNick) (newNick)
 - (B)CURRENT (currentChannel)

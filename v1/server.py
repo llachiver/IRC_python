@@ -36,10 +36,15 @@ HOST = ''
     #> type: dictionnary
     #> channelName (string) -> client_socket list (queue)
 
+#admins:
+    #> type: dictionnary
+    #> channelName (string) -> set of admins
+
 
         
 clients = dict()
 channels = {"HUB":[]}
+admins = {"HUB":set()}
 channels_names = {"HUB"}
 waiting_room = {}         # socket -> IP
 nicks = set()
@@ -99,37 +104,48 @@ def find_soc_from_nick(nick, chan):
     return None
 
 
-def clt_change_channel(clt,new_channel):
+def clt_change_channel(clt,new_channel, leaveOld = True):
     
     old_channel = clients[clt][3]
     clients[clt][3] = new_channel
-    channels[old_channel].remove(clt)
+    if(leaveOld or (old_channel == "HUB")):
+        channels[old_channel].remove(clt)
     
-    #[diffuseClient, (newAdmin)]
+    #[diffuseClient, (newAdmin), old_channel]
     result = [clt]
     
     #exit a channel:
-    if (old_channel != "HUB"):
-        if (channels[old_channel] == []):       #if the old channel becomes empty
-            del channels[old_channel]
-            channels_names.remove(old_channel)
-            result[0] = None
-        else:
-            if (clients[clt][2] == 1):                 #if he's the admin of the channel
-                clients[channels[old_channel][0]][2] = 1
-                result.append(clients[channels[old_channel][0]][1])
-            result[0] = channels[old_channel][0]
+    if(leaveOld):
+        if (old_channel != "HUB"):
+            if (channels[old_channel] == []):       #if the old channel becomes empty
+                del channels[old_channel]
+                del admins[old_channel]
+                channels_names.remove(old_channel)
+                result[0] = None
+            else:
+                if (clients[clt][2] == 1): #if he's admin of the channel
+                    admins[old_channel].remove(clt)
+                    if(len(admins[old_channel]) == 0): #if he was the LAST admin
+                        clients[channels[old_channel][0]][2] = 1
+                        admins[old_channel].add(channels[old_channel][0])
+                        result.append(clients[channels[old_channel][0]][1])
+                result[0] = channels[old_channel][0]
     
-    clients[clt][2] = 0                      #we can't be admin in the HUB
+    clients[clt][2] = 0                    
     
     #enter in a channel:
-    if (new_channel in channels_names):       #if the channel already exists
-        channels[new_channel].append(clt)
+    if (new_channel in channels_names):  #if the channel already exists
+        if(not(clt in channels[new_channel])):
+            channels[new_channel].append(clt)
+        clients[clt][2] = 1 if (clt in admins[new_channel]) else 0
     else:                                       #else it is created
         channels[new_channel] = [clt]
         channels_names.add(new_channel)
-        clients[clt][2] = 1                     # the client becomes admin    
-    
+        clients[clt][2] = 1             # the client becomes admin
+        admins[new_channel] = set()
+        admins[new_channel].add(clt)
+
+    result.append(old_channel)
     return result
     
 #--------------- PICROM FONCTIONS ----------------------
@@ -179,7 +195,7 @@ def picrom_join(clt,args):
         send("ERR 10", clt)
         return
     
-    clt_change_channel(clt,channelName)
+    clt_change_channel(clt,channelName, current_location == "HUB")
     #send information, client can know with admin rank if the channel was created
     send_channel(("JOIN " + channelName +" "+ str(clients[clt][2]) + " " + clients[clt][1]), clt, True)
         
@@ -195,7 +211,7 @@ def picrom_msg(clt,args):
     
     message = ' '.join(word for word in args)
     
-    send_channel("MSG "  + str(clients[clt][2]) + " " + clients[clt][1] +" "+message,clt)
+    send_channel("MSG "  + clients[clt][3] + " " + str(clients[clt][2]) + " " + clients[clt][1] +" "+message,clt)
     
 
 
@@ -219,7 +235,7 @@ def picrom_prv_msg(clt, args):
     
     message = ' '.join(word for word in args[1:])
     
-    send("PRV_MSG "  + str(clients[clt][2]) + " " + clients[clt][1] + " " +  message, targetSoc)
+    send("PRV_MSG "  + clients[clt][3] + " " + str(clients[clt][2]) + " " + clients[clt][1] + " " +  message, targetSoc)
 
 
     
@@ -229,7 +245,7 @@ def picrom_who(clt):
         return
     string = "WHO"
     for i in channels[clients[clt][3]]:
-        string += " " + str(clients[i][2]) + " "+ clients[i][1]
+        string += " " + ("1" if (i in admins[clients[clt][3]]) else "0") + " "+ clients[i][1]
     
     send(string, clt)
 
@@ -265,8 +281,9 @@ def picrom_ren(clt,args):
     channels_names.remove(oldN)
     channels_names.add(newN)
     channels[newN] = channels.pop(oldN)
+    admins[newN] = admins.pop(oldN)
     
-    send_channel(("REN " + clients[clt][1] + " " + oldN + " " + newN), clt, True)
+    send_channel(("REN "  + clients[clt][3] + " " + clients[clt][1] + " " + oldN + " " + newN), clt, True)
 
 
 
@@ -286,7 +303,7 @@ def picrom_kick(clt,args):
         send("ERR 4", clt)
         return
     
-    send_channel(("KICK " + clients[clt][1] + " " + str(clients[targetSoc][2]) + " " + clients[targetSoc][1]), clt, True)
+    send_channel(("KICK "  + clients[clt][3] + " " + clients[clt][1] + " " + str(clients[targetSoc][2]) + " " + clients[targetSoc][1]), clt, True)
     clt_change_channel(targetSoc,"HUB")
 
 
@@ -296,24 +313,29 @@ def picrom_leave(clt, brutal = False):
         send("ERR 5", clt)
         return
 
-    result = clt_change_channel(clt,"HUB")
+
+    #changing current channel:
+    nextChan = "HUB"
+    for i in channels:
+        if((clt in channels[i]) and (i != "HUB") and (i != clients[clt][3])):
+            nextChan = i
+            break
+    
+    result = clt_change_channel(clt,nextChan)
     if(result[0] == None):
         if(not brutal): #case if it leave because it has rage quit
-            send(("LEAVE 1 " + clients[clt][1]), clt, True) #send only to exiter
+            send(("LEAVE " + result[1] + " 1 " + clients[clt][1]), clt) #send only to exiter
     else:
-        if(len(result) == 1):
-            send_channel(("LEAVE 0 " + clients[clt][1]), result[0], True)
+        if(len(result) == 2):
+            send_channel(("LEAVE "   + result[1] + " 0 " + clients[clt][1]), result[0])
             if(not brutal):
-                send(("LEAVE 0 " + clients[clt][1]), clt, True)
+                send(("LEAVE "   + result[1] + " 0 " + clients[clt][1]), clt)
         else:
-            send_channel(("LEAVE 1 "+ clients[clt][1] + " " + result[1] ), result[0], True)
+            send_channel(("LEAVE "   + result[2] + " 1 " + clients[clt][1] + " " + result[1] ), result[0])
             if(not brutal):
-                send(("LEAVE 1 "+ clients[clt][1] + " " + result[1] ), clt, True)
-    #changing current channel:
-    for i in channels:
-        if(clt in channels[i]):
-            clients[clt][3] = i
-            return
+                send(("LEAVE "   + result[2] + " 1 " + clients[clt][1] + " " + result[1] ), clt)
+
+    
 
 
 def picrom_nick(clt,args):
@@ -337,7 +359,7 @@ def picrom_nick(clt,args):
 def picrom_current(clt, args):
     if(args != []): #client change his current channel, if args == [] client just check his current
         target = args[0]
-        if((target in channels) and (not(clt in channels[target]))):
+        if(not (target in channels) or (not(clt in channels[target]))):
             send("ERR 6", clt)
             return
         if(target == clients[clt][3]):
@@ -347,6 +369,7 @@ def picrom_current(clt, args):
             send("ERR 10", clt)
             return
         clients[clt][3] = target
+        clients[clt][2] = 1 if (clt in admins[target]) else 0
     send("CURRENT " + clients[clt][3], clt)
 
 
