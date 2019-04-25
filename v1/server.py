@@ -308,7 +308,7 @@ def picrom_kick(clt,args):
         return
     
     send_channel(("KICK "  + clients[clt][3] + " " + clients[clt][1] + " " + str(clients[targetSoc][2]) + " " + clients[targetSoc][1]), clt, True)
-    clt_change_channel(targetSoc,"HUB")
+    picrom_leave(targetSoc)
 
 
 
@@ -376,6 +376,53 @@ def picrom_current(clt, args):
         clients[clt][2] = 1 if (clt in admins[target]) else 0
     send("CURRENT " + clients[clt][3], clt)
 
+
+
+def picrom_grant(clt, args):
+    if (clients[clt][2] == 0):  #if not admin
+        send("ERR 1", clt)
+        return
+    if (len(args) < 1):
+        send("ERR 9", clt)
+        return
+    target = args[0]
+    if(target == clients[clt][1]):   #auto-grant
+        send("ERR 2", clt)
+        return
+    targetSoc = find_soc_from_nick(target, clients[clt][3])
+    if(targetSoc == None):
+        send("ERR 4", clt)
+        return
+    if(clients[targetSoc][2] == 1):
+        send("ERR 12", clt)
+        return
+    clients[targetSoc][2] = 1
+    admins[clients[clt][3]].add(targetSoc)
+    send_channel("GRANT " + clients[clt][3] + " " + clients[clt][1] + " " + clients[targetSoc][1] , clt)
+
+
+
+def picrom_revoke(clt, args):
+    if (clients[clt][2] == 0):  #if not admin
+        send("ERR 1", clt)
+        return
+    if (len(args) < 1):
+        send("ERR 9", clt)
+        return
+    target = args[0]
+    if(target == clients[clt][1]):   #auto-revoke
+        send("ERR 2", clt)
+        return
+    targetSoc = find_soc_from_nick(target, clients[clt][3])
+    if(targetSoc == None):
+        send("ERR 4", clt)
+        return
+    if(clients[targetSoc][2] == 0):
+        send("ERR 12", clt)
+        return
+    clients[targetSoc][2] = 0
+    admins[clients[clt][3]].remove(targetSoc)
+    send_channel("REVOKE " + clients[clt][3] + " " + clients[clt][1] + " " + clients[targetSoc][1] , clt)    
 
 
 #starting server
@@ -463,6 +510,10 @@ while(True):
                         picrom_nick(s_clt, args)
                     elif(command == "CURRENT"):
                         picrom_current(s_clt, args)
+                    elif(command == "GRANT"):
+                        picrom_grant(s_clt, args)
+                    elif(command == "REVOKE"):
+                        picrom_revoke(s_clt, args)
                     else:
                         send("ERR 0", s_clt)                #unknown command
                
