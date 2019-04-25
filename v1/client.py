@@ -47,12 +47,17 @@ err_msg={"ERR 0": "Erreur : commande inconnue.",
          "ERR 3": "Erreur : ce pseudo est déjà utilisé.",
          "ERR 4": "Erreur : utilisateur introuvable.",
          "ERR 5": "Erreur : cette commande n'est pas autorisée ici. Faites /LEAVE ou /JOIN <channel>",
+         "ERR 6": "Erreur : ce channel n'existe pas.",
          "ERR 8": "Erreur : ce channel existe déjà.",
          "ERR 9": "Erreur : mauvais arguments. Faites /HELP.",
-         "ERR 10": "Erreur : vous ne pouvez pas rejoindre le HUB (Créé en projet Réseau en 2019, le HUB est un channel particulier. Son statut particulier de \"HUB\" fait que ce channel est en fait tout simplement la zone d'attente avant de rejoindre un autre channel autre que le HUB qui est, rappelons le, un channel avant tout particulier. Par conséquent une décision particulière et nécessaire par nos soins a été adoptée, il est en conséquence particulièrement impossible d'envoyer des messages depuis le HUB. De toute manière pour savoir ce qu'il est possible de faire dans le HUB ou en dehors(zone non particulière) référez vous particulièrement au README du projet parceque si vous êtes encore là c'est que vous êtes particulièrement au chomage et que nous cassez particulièrement les sockets.)"}
+         "ERR 10": "Erreur : vous ne pouvez pas rejoindre le HUB (Créé en projet Réseau en 2019, le HUB est un channel particulier. Son statut particulier de \"HUB\" fait que ce channel est en fait tout simplement la zone d'attente avant de rejoindre un autre channel autre que le HUB qui est, rappelons le, un channel avant tout particulier. Par conséquent une décision particulière et nécessaire par nos soins a été adoptée, il est en conséquence particulièrement impossible d'envoyer des messages depuis le HUB. De toute manière pour savoir ce qu'il est possible de faire dans le HUB ou en dehors(zone non particulière) référez vous particulièrement au README du projet parceque si vous êtes encore là c'est que vous êtes particulièrement au chomage et que nous cassez particulièrement les sockets.)",
+         "ERR 11": "Erreur : vous ne pouvez pas JOIN votre propre channel."}
+
 #--------- FUNCTIONS -------------
 
 def send(msg,s):
+    leave=0
+    
     if(msg[0]=='/'):        #if it's a command
         words = msg.split()
         cmd = words[0]
@@ -79,6 +84,8 @@ def send(msg,s):
                     print('Erreur : la commande %s attend %d argument(s).' % (cmd,cmd_list[cmd]))
                     return
                 else:
+                    if(cmd=="/LEAVE"):
+                        leave=1
                     data = msg[1:]
 
         else:               
@@ -88,9 +95,12 @@ def send(msg,s):
         if(len(msg)>1):     #if it's a message
             data = "MSG " + msg
         else:
-            return
+            return          #if the client type enter like a retard
 
     s.send(data.encode())
+
+    if(leave==1):
+        s.send("CURRENT".encode())
 
 
 def display_rank(char,nick): #usefull function to quick generate admin symbol by reading rank integer provided by protocol.
@@ -140,7 +150,7 @@ def display(data):
         data = string
     elif(cmd == "LEAVE"):
         if(words[3] == nick):
-            data = "Vous venez de quitter le channel."
+            data = "Vous venez de quitter le channel "+words[1]+"."
         else:
             data = words[3] + " a quitté le channel."
             if(words[2] == "1"):
