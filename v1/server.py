@@ -40,9 +40,12 @@ HOST = ''
     #> type: dictionnary
     #> channelName (string) -> set of admins
 
-
+#joined: (not yet used, improve complexity in BYE and LEAVE but increase complexity in REN)
+    #> type: dictionnary
+    #> client_socket -> set of joined channels
         
 clients = dict()
+#joined = {}
 channels = {"HUB":[]}
 admins = {"HUB":set()}
 channels_names = {"HUB"}
@@ -169,7 +172,8 @@ def picrom_bye(clt):
         del waiting_room[clt]
         return
 
-    if(clients[clt][3] != "HUB"): #case if connexion cutted when client is in a channel
+    
+    while(clients[clt][3] != "HUB"): #leave all channels not already leaved
         picrom_leave(clt, True)
     
     send_all("BYE " + clients[clt][1], clt)
