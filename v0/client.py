@@ -1,7 +1,7 @@
 import socket
 import select
 import datetime
-#import tty
+import tty
 import sys
 import time
 import fileinput

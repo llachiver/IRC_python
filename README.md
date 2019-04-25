@@ -17,6 +17,7 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - /MSG (nick) (private message)
 - /BYE
 - /NICK (newNick)
+- /CURRENT
 
 ## Admins commands:
 - /KICK (nick)
@@ -62,13 +63,13 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 
 With (R) : rank, 0 if normal, 1 if admin
 
-(A) server command send to all except requester
+(A) server command sent to all except requester
 
-(C) server command send to channel except requester
+(C) server command sent to channel except requester
 
-(B) server command send to requester
+(B) server command sent to requester
 
-(T) server command send to target client
+(T) server command sent to target client
 
 (S) if server command send also to requester ((s) if send with a second command)
 
