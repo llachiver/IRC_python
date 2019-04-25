@@ -57,7 +57,7 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (T) PRV_MSG (channel) (R) (nick) (message)
 - (B) LIST (channel1) ... (channelN)
 - (CS)JOIN (channel) (R) (newCommerNick)
-- (CS)KICK (channel) (adminNick) (R) (nick) : forced LEAVE command
+- (CS)KICK (channel) (adminNick) (R) (nick)
 - (CS)REN (channel) (adminNick) (oldName) (newName)
 - (B) WHO (R)(client1) ... (R)(clientN)
 - (Cs) LEAVE (channel) (R) (nick) (newAdmin if (R) == 1)
