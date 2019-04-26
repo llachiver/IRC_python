@@ -287,7 +287,7 @@ def picrom_ren(clt,args):
     channels[newN] = channels.pop(oldN)
     admins[newN] = admins.pop(oldN)
     
-    send_channel(("REN "  + clients[clt][3] + " " + clients[clt][1] + " " + oldN + " " + newN), clt, True)
+    send_channel(("REN "  + oldN + " " + clients[clt][1] + " " + newN), clt, True)
 
 
 

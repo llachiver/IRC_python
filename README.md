@@ -54,7 +54,7 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (B) LIST (channel1) ... (channelN)
 - (CS)JOIN (channel) (R) (newCommerNick)
 - (CS)KICK (channel) (adminNick) (R) (nick)
-- (CS)REN (channel) (adminNick) (oldName) (newName)
+- (CS)REN (channel) (adminNick) (newName)
 - (B) WHO (R)(client1) ... (R)(clientN)
 - (Cs) LEAVE (channel) (R) (nick) (newAdmin if (R) == 1)
 - (A) BYE (nick)
