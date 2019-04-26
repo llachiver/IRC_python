@@ -18,18 +18,20 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - /BYE
 - /NICK (newNick)
 - /CURRENT
+- /CURRENT (newCurrentChannel)
 
 ## Admins commands:
 - /KICK (nick)
 - /REN (newName)
-
+- /GRANT newAdmin
+- /REVOKE noMoreAdmin
 
 
 
 # PICROM Protocol:
 ## Protocol commands (Client to Serv):
 - (I) MSG (message) : send in current channel
-- (I) PRV_MSG (nick) (message)
+- (I) PRV_MSG N (nick1) (nick2) ... (nickN) (message) :
 - (E) LIST
 - (E) JOIN (channelname) : (set the current channel also)
 - (I) KICK (nick)
@@ -39,6 +41,8 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (H) BYE : (leave all channels if not done)
 - (E) NICK (nick)
 - (E) CURRENT (newCurrentChannel or void)
+- (I) GRANT (newAdmin)
+- (I) REVOKE (oldAdmin)
 
 (E) Everywhere
 
@@ -60,6 +64,8 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (A) BYE (nick)
 - (AS)NICK (R) (oldNick) (newNick)
 - (B)CURRENT (currentChannel)
+- (CS)GRANT (channel) (adminNick) (newAdmin)
+- (CS)REVOKE (channel) (adminNick) (oldAdmin)
 
 With (R) : rank, 0 if normal, 1 if admin
 
@@ -77,9 +83,9 @@ With (R) : rank, 0 if normal, 1 if admin
 ## Possible server errors:
 - ERR 0  wrong command
 - ERR 1  unauthorized command (need admin privilege)
-- ERR 2  Auto KICK or PRV_MSG
+- ERR 2  Auto KICK,PRV_MSG, GRANT or REVOKE
 - ERR 3  nick already used
-- ERR 4  selected user not on the channel
+- ERR 4  selected user(s) not on the channel
 - ERR 5  unauthorized command (go to HUB or join a channel)
 - ERR 6 you don't have joined this channel, can't CURRENT
 - ERR 7  Need do NICK command before
@@ -87,3 +93,4 @@ With (R) : rank, 0 if normal, 1 if admin
 - ERR 9 wrong args
 - ERR 10 try to join or to current HUB lol
 - ERR 11 you already JOIN this channel or its your CURRENT channel
+- ERR 12 GRANT admin or REVOKE muggle
