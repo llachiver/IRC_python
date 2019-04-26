@@ -31,7 +31,7 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 # PICROM Protocol:
 ## Protocol commands (Client to Serv):
 - (I) MSG (message) : send in current channel
-- (I) PRV_MSG (nick) (message)
+- (I) PRV_MSG N (nick1) (nick2) ... (nickN) (message) :
 - (E) LIST
 - (E) JOIN (channelname) : (set the current channel also)
 - (I) KICK (nick)
@@ -85,7 +85,7 @@ With (R) : rank, 0 if normal, 1 if admin
 - ERR 1  unauthorized command (need admin privilege)
 - ERR 2  Auto KICK,PRV_MSG, GRANT or REVOKE
 - ERR 3  nick already used
-- ERR 4  selected user not on the channel
+- ERR 4  selected user(s) not on the channel
 - ERR 5  unauthorized command (go to HUB or join a channel)
 - ERR 6 you don't have joined this channel, can't CURRENT
 - ERR 7  Need do NICK command before

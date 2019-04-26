@@ -221,25 +221,30 @@ def picrom_msg(clt,args):
 
 
 def picrom_prv_msg(clt, args):
-    if (len(args) < 2):
+    if (len(args) < 3):
         send("ERR 9", clt)
         return
     if(clients[clt][3] == "HUB"):
         send("ERR 5", clt)
         return
-    
-    target = args[0]
-    if(target == clients[clt][1]):   #auto-msg
-        send("ERR 2", clt)
-        return
-    targetSoc = find_soc_from_nick(target, clients[clt][3])
-    if(targetSoc == None):
-        send("ERR 4", clt)
+
+    nbTargets = int(args[0])
+    if((len(args)) <= nbTargets + 1):
+        send("ERR 9", clt)
         return
     
-    message = ' '.join(word for word in args[1:])
+    message = ' '.join(word for word in args[nbTargets:])
     
-    send("PRV_MSG "  + clients[clt][3] + " " + str(clients[clt][2]) + " " + clients[clt][1] + " " +  message, targetSoc)
+    for i in range(1, nbTargets+1):
+        target = args[i]
+        if(target == clients[clt][1]):   #auto-msg
+            send("ERR 2", clt)
+            continue
+        targetSoc = find_soc_from_nick(target, clients[clt][3])
+        if(targetSoc == None):
+            send("ERR 4", clt)
+            continue
+        send("PRV_MSG "  + clients[clt][3] + " " + str(clients[clt][2]) + " " + clients[clt][1] + " " +  message, targetSoc)
 
 
     
