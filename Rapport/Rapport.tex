@@ -1,0 +1,122 @@
+\documentclass[12pt]{article}
+
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[francais]{babel}
+\usepackage{hyperref}
+
+
+\title{Projet réseau - Chat Python}
+\author{Loïc Lachiever}
+\author{Romain Pigret-Cadou}
+
+\begin{document}
+\maketitle
+
+
+\begin{abstract}
+    \begin{center}
+    \url{https://github.com/picachoc/IRC_python}
+    \\Projet UE Réseau L2
+    \\Université de Bordeaux
+    \\Groupe TMA12\_13
+    \\Année 2019
+    \end{center}
+\end{abstract}
+
+
+\tableofcontents
+
+
+
+\section{Introduction}
+Dans le cadre de l'UE Réseau de la L2 informatique de l'Université de Bordeaux,
+nous devions, pour nous initier aux sockets, réaliser un chat textuel en Python.
+En s'inspirant fortement du protocole IRC, les fonctionnalités du chat nous étaient
+imposées en 2 versions (0 et 1) via le cahier des charges disponible en Annexe.
+
+\section{Fonctionnement général}
+
+Deux scripts python sont donc nécessaires, le \textbf{client} et
+le \textbf{serveur} (respectivement
+client.py et server.py). Python a été préféré à d'autres langages pour sa simplicité
+d'implémentation, il est vrai qu'il a été simple de mettre en place
+certaines structures.
+
+\underline{Le Serveur} a pour rôle d'orchestrer les différentes demandes des clients,
+transmises par sockets. Il stocke aussi toutes les informations nécessaires comme
+les canaux de discussion, les noms d'utilisateurs, qui est situé où, qui est admin, ...
+Ces informations sont manipulées sous la forme de chaînes de caractères.
+Pour communiquer avec le serveur il faut lui envoyer des commandes spécifiques,
+de même il vous transmet ses informations via des commandes aussi (souvent le même intitulé).
+En conséquence, pour se mettre d'accord sur ces commandes nous devions créer notre propre
+protocole de communication \emph{(client <-> serveur)}.
+
+\underline{Le Client} lui peut prendre diverse formes, que ce soit une application graphique
+ou dans un terminal. L'intérêt du client est d'interpréter les commandes du protocole serveur
+et de convertir en protocole serveur les ordres donnés par l'utilisateur, que se soit par un
+clic sur un bouton ou en tapant "/commande". En effet le serveur est conçu pour fonctionner
+parfaitement avec son protocole, d'ailleurs nous le testions avec la commande linux \emph{nc}.
+Mais le client permet de rajouter une surcouche ergonomique, en traduisant les codes d'erreurs,
+en parlant dans la langue utilisateur (français) et de manière plus claire que le protocole.
+
+La conception du protocole serveur était totalement libre, seule la syntaxe et
+la fonctionnalité des commandes
+à taper dans le terminal client étaient imposées.
+
+
+\section{Serveur}
+Notre serveur est basé sur le protocole PICROM, intitulé par concaténation des
+3 premières lettres de nos pseudonymes respectifs.
+
+\subsection{Documentation}
+
+\subsection{Implémentation}
+
+
+\section{Client}
+
+\subsection{Documentation}
+
+\subsection{Implémentation}
+
+
+
+\section{Conclusion}
+
+
+
+
+\section{Annexes}
+\subsection{Cahier des charges}
+{\large \textbf{\underline{Commandes client v0:}}}
+\begin{itemize}
+    \item /HELP: print this message
+    \item /LIST: list all available channels on server
+    \item /JOIN <channel>: join (or create) a channel
+    \item /LEAVE: leave current channel
+    \item /WHO: list users in current channel
+    \item <message>: send a message in current channel
+    \item /MSG <nick> <message>: send a private message in current channel
+    \item /BYE: disconnect from server
+    \item /KICK <nick>: kick user from current channel [admin]
+    \item /REN <channel>: change the current channel name [admin]
+\end{itemize}
+
+{\large \textbf{\underline{Commandes client v1:}}}
+\begin{itemize}
+    \item /CURRENT: print current channel name
+\item /CURRENT <channel>: set current channel
+\item /MSG <nick1;nick2;...> <message>: send a private message to several users in current channel
+\item /NICK <nick>: change user nickname on server
+\item /GRANT <nick>: grant admin privileges to a user [admin]
+\item /REVOKE <nick>: revoke admin privileges [admin]
+\item /SEND <nick> </path/to/file>: send a file to a remote user
+\item /RECV </path/to/file>: receive a file and save it locally
+\item /HISTORY: print history of current channel (saved by server)
+\end{itemize}
+
+
+\end{document}
+
