@@ -5,6 +5,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[francais]{babel}
 \usepackage{hyperref}
+\usepackage{pifont}
 
 
 \title{Projet réseau - Chat Python}
@@ -71,6 +72,59 @@ Notre serveur est basé sur le protocole PICROM, intitulé par concaténation de
 3 premières lettres de nos pseudonymes respectifs.
 
 \subsection{Documentation}
+Le serveur peut-être lancé depuis le shell IDLE ou sur un terminal linux avec
+la commande : \emph{python3 server.py}
+\\
+
+\noindent{\textbf{\underline{Protocole Client -> Serveur :}}}
+\\
+
+\noindent{\underline{Légende:}}
+\\\ding{88} : Nécessite les droits administrateurs
+\\\ding{108} : Le client ne peut l'utiliser que dans un $channel$ (canal de discussion)
+\\\ding{110} : Utilisable uniquement en dehors de tout $channel$, dans le $HUB$
+\\\ding{115} : Utilisable de n'importe où
+
+\begin{description}
+    \item[---LIST]:\ding{115} le client demande la liste des $channels$ ouverts
+    \item[---JOIN <channelName>]:\ding{115} le client veut rejoindre le canal "channelName" 
+    \item[---LEAVE]:\ding{108} le client veut quitter le $channel$
+    \item[---WHO] :\ding{108} le client veut la liste des $nicks$(pseudonymes) des clients
+    sur le $channel$ courant
+    \item[---MSG <message>]:\ding{108} le client veut envoyer un message sur le $channel$
+    \item[---PRV\_MSG N <nick1> ... <nickN> <message>]:\ding{108} le client veut
+         envoyer un message privé à N utilisateurs identifiés par leurs $nicks$
+    \item[---BYE]:\ding{110} le client veut se déconnecter du serveur
+    \item[---KICK <nick>] \ding{88}\ding{108} l'administrateur veut $kicker$ nick
+    du $channel$: lui forcer le LEAVE
+    \item[---REN <newChannelName>] \ding{88}\ding{108} l'administrateur veut renommer le $channel$
+    \item[---CURRENT <newChannel |>] \ding{115} le client veut définir un autre
+    $channel$ préalablement JOIN comme son $channel$ courant | ou simplement
+    demander son $channel$ courant
+    \item[---NICK <newNick>] \ding{115} le client veut changer son pseudo
+    \item[---GRANT <newAdminNick>] \ding{88}\ding{108} l'administrateur veut rendre admin
+                                                un client sur le $channel$ 
+    \item[---REVOKE <oldAdminNick>] \ding{88}\ding{108} l'administrateur veut destituer 
+                                            un admin sur le $channel$
+    \\
+\end{description}
+
+
+
+\noindent{\textbf{\underline{Protocole Serveur -> Client :}}}
+\begin{description}
+    \item[---a] a
+    \\
+\end{description}
+
+
+\noindent{\textbf{\underline{Protocole erreurs :}}}
+
+\begin{description}
+    \item[ERR 0] a
+    \\
+\end{description}
+
 
 \subsection{Implémentation}
 
