@@ -112,8 +112,39 @@ la commande : \emph{python3 server.py}
 
 
 \noindent{\textbf{\underline{Protocole Serveur -> Client :}}}
+\\
+
+\noindent{\underline{Légende:}}
+\\<R> :  rang du client, 1 pour administrateur, 0 sinon
+\\\ding{108} : Commande envoyée au client
+\\\ding{110} : Commande envoyée aux autres clients du $channel$
+\\\ding{115} : Commande envoyée à tout les autres clients du serveur
+\\\ding{54} : Commande envoyée aussi au client"
+\\\ding{88} : Commande envoyée au(x) client(s) cible(s)
+
 \begin{description}
-    \item[---a] a
+    \item[---ERR <code>] \ding{108} envoie d'un code d'erreur
+    \item[---CONNECT <firstNick>] \ding{115}\ding{54} confirme la connexion
+                                                        d'un nouveau client
+    \item[---LIST <channel1> ... <channelN>] \ding{108} envoie la liste des $channels$
+                                                ouverts, séparés par des espaces
+    \item[---JOIN <channel> <R> <newCommerNick>] \ding{110}\ding{54} indique l'entrée
+                                d'un nouveau client sur le $channel$, si votre rang est
+                                1 alors vous venez d'ouvrir le $channel$
+    \item[---LEAVE <channel> 0 <nick> | <channel> 1 <nick> <newAdmin>] \ding{110}\ding{54}
+                indique qu'un client a quitté le $channel$ | indique un nouvel admin
+                s'il était le dernier.
+    \item[---WHO <R> <client1> ... <R> <clientN>] \ding{108} envoie la liste des clients
+                                    sur le channel
+    \item[---MSG <channel> <R> <nick> <message>] \ding{110} nick a envoyé un message sur le channel
+    \item[---PRV\_MSG <channel> <R> <nick> <message>] \ding{88} nick vous a envoyé un message privé
+    \item[---BYE <nick>] \ding{115} indique qu'un client s'est déconnecté du serveur
+    \item[---KICK <channel> <adminNick> <R> <nick>] \ding{110}\ding{54} indique que nick va être
+    immédiatement $kické$ par l'admin du $channel$
+    \item[---REN <channel> <adminNick> <newName>] \ding{110}\ding{54} le $channel$ a été renommé par l'admin
+    \item[---CURRENT <currentChannel>] \ding{108} indique au client son $channel$ courant ou celui qu'il vient de définir
+    \item[---GRANT <channel> <adminNick> <newAdmin>] \ding{110}\ding{54} newAdmin a été promu admin par adminNick dans le $channel$
+    \item[---REVOKE <channel> <adminNick> <oldAdmin>] \ding{110}\ding{54} oldAdmin n'est plus administrateur
     \\
 \end{description}
 
@@ -121,8 +152,19 @@ la commande : \emph{python3 server.py}
 \noindent{\textbf{\underline{Protocole erreurs :}}}
 
 \begin{description}
-    \item[ERR 0] a
-    \\
+    \item[ERR 0] Commande inconnue
+    \item[ERR 1] Commande non autorisée, requiert les privilèges administrateurs
+    \item[ERR 2] Vous essayez d'appliquer sur vous même une de ces commandes: KICK, PRV\_MSG, GRANT ou REVOKE
+    \item[ERR 3] Ce pseudo est déjà utilisé
+    \item[ERR 4] Le client sélectionné n'est pas sur le $channel$
+    \item[ERR 5] Commande non autorisée ici, rejoignez un $channel$ ou quittez les tous. 
+    \item[ERR 6] Vous n'avez pas rejoins ce $channel$, impossible d'en faire le $channel$ courant
+    \item[ERR 7] Vous devez d'abord choisir un pseudo avant toute opération sur le serveur
+    \item[ERR 8] Ce nom de $channel$ est déjà pris
+    \item[ERR 9] Arguments mal saisis
+    \item[ERR 10] Vous essayez de JOIN ou CURRENT le $channel$ spécial "HUB"
+    \item[ERR 11] Vous essayez de JOIN un $channel$ déjà rejoint, ou de CURRENT votre $channel$ courant
+    \item[ERR 12] Vous voulez GRANT un admin ou REVOKE un non-admin
 \end{description}
 
 
