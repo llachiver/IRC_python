@@ -208,6 +208,7 @@ def picrom_send(clt, args):
 #LOOP FOR SENDING PACKAGES
 def picrom_sendF(clt,data):
     f = file_transfered[clt]
+    print(data)
     if(len(data)>6):   #if we have data after SENDF
         f.write(data[6:])
     else:

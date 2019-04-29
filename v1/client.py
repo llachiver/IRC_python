@@ -140,7 +140,8 @@ def picrom_sendf(s):
     l=file_send.read(1024)
     while(l):
         data = "SENDF ".encode()+l
-        time.sleep(0.001)        #for letting the time to the program
+        print(data)
+        time.sleep(0.01)        #for letting the time to the program
         s.send(data)
         l=file_send.read(1024)
     s.send("SENDF".encode())
@@ -204,7 +205,7 @@ def display(s,data):
         elif(cmd == "KICK"):
             k_adminNick, k_rank, k_nick = words[2:]
             if(k_nick==nick):
-                data = display_chan(words[1]) + display_rank("1",k_adminNick) + "vous a kické !"
+                data = display_chan(words[1]) + display_rank("1",k_adminNick) + " vous a kické !"
             else:
                 if(k_adminNick==nick):
                     data = display_chan(words[1]) + "Vous avez kické " + display_rank(k_rank,k_nick) + "."
@@ -229,7 +230,7 @@ def display(s,data):
                     if(words[3] == nick):
                         data += " Vous devenez administrateur."
                     else:
-                        data += " " + words[3] +" devient administrateur."
+                        data += " " + words[4] +" devient administrateur."
                         
         elif(cmd == "BYE"):
             data = words[1] + " a quitté le serveur."
@@ -247,14 +248,14 @@ def display(s,data):
         elif(cmd == "GRANT"):
             chan, adminNick, newAdmin = words[1:]
             if(newAdmin == nick):
-                data = display_chan(chan) + display_rank("1",adminNick) + "vous a OPé."
+                data = display_chan(chan) + display_rank("1",adminNick) + " vous a OPé."
             else:
                 data = display_chan(chan) + display_rank("1",adminNick) + " a OPé " + newAdmin + "."
             
         elif(cmd == "REVOKE"):
             chan, adminNick, oldAdmin = words[1:]
             if(oldAdmin == nick):
-                data = display_chan(chan) + display_rank("1",adminNick) + "vous a dé-OPé."
+                data = display_chan(chan) + display_rank("1",adminNick) + " vous a dé-OPé."
             else :
                 data = display_chan(chan) + display_rank("1",adminNick) + " a dé-OPé " + oldAdmin + " admin."
 
