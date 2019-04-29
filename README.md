@@ -19,6 +19,8 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - /NICK (newNick)
 - /CURRENT
 - /CURRENT (newCurrentChannel)
+- /SEND (nick) (path/to/file)
+- /RECV (path/to/file)
 
 ## Admins commands:
 - /KICK (nick)
@@ -44,6 +46,13 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (I) GRANT (newAdmin)
 - (I) REVOKE (oldAdmin)
 
+- (I) SEND (nick) (file_name)
+- (I) SENDF (file_package)          //will be sent untill the transfer is complete
+
+- (I) RECV (0 : waiting for transfer | 1 : transfer complete)
+
+
+
 (E) Everywhere
 
 (H) Hub only
@@ -66,6 +75,17 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (B)CURRENT (currentChannel)
 - (CS)GRANT (channel) (adminNick) (newAdmin)
 - (CS)REVOKE (channel) (adminNick) (oldAdmin)
+
+- (T) SEND (0 : waiting for transfer | 1 : transfer complete)
+
+- (T) RECV (sender_nick)        //to notify the recipient he received a file from sender_nick
+- (I) RECVF (file_package)                                                 //will be sent untill the transfer is complete
+
+
+
+
+
+
 
 With (R) : rank, 0 if normal, 1 if admin
 
@@ -94,3 +114,5 @@ With (R) : rank, 0 if normal, 1 if admin
 - ERR 10 try to join or to current HUB lol
 - ERR 11 you already JOIN this channel or its your CURRENT channel
 - ERR 12 GRANT admin or REVOKE muggle
+- ERR 13 don't have any file for the client
+- ERR 14 a file has already been sent to this recipient

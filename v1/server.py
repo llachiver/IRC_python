@@ -2,6 +2,8 @@ import socket
 import select
 import sys
 import datetime
+import os
+import fnmatch
 
 '''
 IRC-like chat server
@@ -45,12 +47,17 @@ HOST = ''
     #> client_socket -> set of joined channels
         
 clients = dict()
-#joined = {}
 channels = {"HUB":[]}
-admins = {"HUB":set()}
-channels_names = {"HUB"}
 waiting_room = {}         # socket -> IP
+
+admins = {"HUB":set()}
+
+channels_names = {"HUB"}
+
 nicks = set()
+
+file_transfered={}
+
 sockets = []
 guest = 1
 
@@ -150,9 +157,115 @@ def clt_change_channel(clt,new_channel, leaveOld = True):
 
     result.append(old_channel)
     return result
+
+
+#find a file
+def find(nick):
+    path = os.path.dirname(os.path.realpath(__file__))   #current directory
+    for root, dirs, files in os.walk(path):
+        for name in files:
+            if fnmatch.fnmatch(name, nick):
+                return os.path.join(name)
     
 #--------------- PICROM FONCTIONS ----------------------
+
+
+#SEND A FILE
+# From client : SEND <nick> <filename>
+# From server : SEND <0 : waiting | 1 : finished>
+
+
+#------------ SEND FILE FUNCTIONS --------------
+def picrom_send(clt, args):
     
+    channel = clients[clt][3]
+    
+    if(channel == "HUB"):
+        send("ERR 5", clt)
+        return
+    if(len(args) != 2):
+        send("ERR 9", clt)
+        return
+    
+    nick = args[0]      #nick -> personne à qui le clt veut envoyer le fichier
+    filename = nick + "_" + args[1]
+
+    if(find(nick+"_*")!=None):      #if a file has already been sent to this recipient
+        send("ERR 14",clt)
+        return
+        
+    targetSoc = find_soc_from_nick(nick, clients[clt][3])
+    if(targetSoc == None):
+        send("ERR 4", clt)
+        return
+    
+    f = open(filename,'wb+')
+    file_transfered[clt]=f
+    send("SEND 0",clt)      #waiting for transfer
+
+
+
+#LOOP FOR SENDING PACKAGES
+def picrom_sendF(clt,data):
+    f = file_transfered[clt]
+    if(len(data)>6):   #if we have data after SENDF
+        f.write(data[6:])
+    else:
+        
+        
+        nick_recipent = f.name.split('_')[0]
+        targetSoc = find_soc_from_nick(nick_recipent, clients[clt][3]) #the client to whom the file is sent
+
+        if(targetSoc == None):      #if he left the chat during the transfer
+            send("ERR 4", clt)      #we send "user not found" to the sender
+            os.remove(f.name)       #we remove the file
+        else:
+            log(clients[clt][1] + " a transféré " + f.name + ".")
+            send("SEND 1",clt)
+            send("RECV "+clients[clt][1],targetSoc)  #else, we notify the recipient that he received a file
+        del file_transfered[clt]
+        f.close()
+
+
+#------------ RECV FILE FUNCTIONS --------------
+def picrom_recv(clt, args):
+    
+    channel = clients[clt][3]
+    
+    if(channel == "HUB"):
+        send("ERR 5", clt)
+        return
+    if(len(args) != 1):
+        send("ERR 9", clt)
+        return
+
+    
+    state = args[0]
+    nick = clients[clt][1]
+    if(state == "0"):
+        filename = find(nick+"_*")       #search for the file beggining by the nick
+        if(filename == None):
+            send("ERR 13",clt)
+            return
+        else:
+            file = open(filename,'rb')
+            l=file.read(1024)    
+            while(l):
+                data = "RECVF ".encode()+l
+                clt.send(data)
+                l=file.read(1024)
+            
+            log('Trasnfert de '+file.name+' à '+nick+' terminé.')
+            clt.send("RECVF".encode())
+    
+
+#LOOP FOR SENDING PACKAGES
+
+
+
+#---------- OTHER PICROM FUNCTIONS ------------
+    
+
 def picrom_connect(clt, nick):
     addr = waiting_room[clt]
     clients[clt] = [addr[0], nick, 0, "HUB"]
@@ -365,6 +478,10 @@ def picrom_nick(clt,args):
     clients[clt][1] = newN
     nicks.remove(oldN)
     nicks.add(newN)
+
+    filename = find(oldN+'_*')
+    if(filename != None):      #if he's the recipient of a file
+        os.rename(filename, newN+'_'+filename[len(oldN+'_'):])   #we rename it with the new nick
     
     send_all(("NICK " + str(clients[clt][2]) + " " + oldN + " " + newN), clt, True)
 
@@ -473,7 +590,11 @@ while(True):
                 break
                 
             else: #the client send a command
-                
+                if(len(line)>=5):
+                    header = line[0:5]
+                    if(header == b'SENDF'):
+                        picrom_sendF(s_clt,line)
+                        break   
                 words = line.decode().split()
                 command = ""
                 args = ""
@@ -524,6 +645,10 @@ while(True):
                         picrom_grant(s_clt, args)
                     elif(command == "REVOKE"):
                         picrom_revoke(s_clt, args)
+                    elif(command == "SEND"):
+                        picrom_send(s_clt, args)
+                    elif(command == "RECV"):
+                        picrom_recv(s_clt, args)
                     else:
                         send("ERR 0", s_clt)                #unknown command
                
