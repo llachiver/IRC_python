@@ -20,11 +20,11 @@
 | Commandes                               | Score (/10) |
 | --------------------------------------- | ----------- |
 | change current channel (/CURRENT)       |      10     |
-| private message to several users (/MSG) |      9      |
+| private message to several users (/MSG) |      10     |
 | change user nickname (/NICK)            |      10     |
 | grant admin privileges (/GRANT)         |      10     |
 | revoke admin privileges  (/REVOKE)      |      10     |
-| send & receive file (/SEND & /RECV)     |             |
+| send & receive file (/SEND & /RECV)     |      10     |
 | history (/HISTORY)                      |             |
 
 ## Bonus (à compléter)
