@@ -209,23 +209,24 @@ def picrom_send(clt, args):
 def picrom_sendF(clt,data):
     f = file_transfered[clt]
     print(data)
+    
     if(len(data)>6):   #if we have data after SENDF
         f.write(data[6:])
-    else:
-        
-        
-        nick_recipent = f.name.split('_')[0]
-        targetSoc = find_soc_from_nick(nick_recipent, clients[clt][3]) #the client to whom the file is sent
+        send("SENDF",clt)   #waiting for the following
+        return
+    
+    nick_recipient = f.name.split('_')[0]
+    targetSoc = find_soc_from_nick(nick_recipient, clients[clt][3]) #the client to whom the file is sent
 
-        if(targetSoc == None):      #if he left the chat during the transfer
-            send("ERR 4", clt)      #we send "user not found" to the sender
-            os.remove(f.name)       #we remove the file
-        else:
-            log(clients[clt][1] + " a transféré " + f.name + ".")
-            send("SEND 1",clt)
-            send("RECV "+clients[clt][1],targetSoc)  #else, we notify the recipient that he received a file
-        del file_transfered[clt]
-        f.close()
+    if(targetSoc == None):      #if he left the chat during the transfer
+        send("ERR 4", clt)      #we send "user not found" to the sender
+        os.remove(f.name)       #we remove the file
+    else:
+        log(clients[clt][1] + " a transféré " + f.name + ".")
+        send("SEND 1",clt)
+        send("RECV "+clients[clt][1],targetSoc)  #else, we notify the recipient that he received a file
+    del file_transfered[clt]
+    f.close()
 
 
 #------------ RECV FILE FUNCTIONS --------------
@@ -257,6 +258,7 @@ def picrom_recv(clt, args):
                 l=file.read(1024)
             
             log('Trasnfert de '+file.name+' à '+nick+' terminé.')
+            os.remove(file.name)
             clt.send("RECVF".encode())
     
 
