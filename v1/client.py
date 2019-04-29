@@ -168,7 +168,42 @@ def display_rank(char,nick): #usefull function to quick generate admin symbol by
 def display_chan(chan): #usefull function to quick generate admin symbol by reading rank integer provided by protocol.
     return "#"+chan+" | "
 
+#------- displays functions to clarify code:
+def display_join(data, words):
+    j_channel, j_rank, j_nick = words[1:]
+    if(j_rank=="0"):
+        if(j_nick == nick):
+            data = display_chan(words[1]) + "Vous avez rejoint le channel."
+        else:
+            data = display_chan(words[1]) + j_nick + " a rejoint le channel."
+    else:
+        data = "Vous venez de créer le channel " + j_channel
+    return data
 
+def display_kick(data, words):
+    k_adminNick, k_rank, k_nick = words[2:]
+    if(k_nick == nick):
+        data = display_chan(words[1]) + display_rank("1",k_adminNick) + " vous a kické !"
+    else:
+        if(k_adminNick == nick):
+            data = display_chan(words[1]) + "Vous avez kické " + display_rank(k_rank,k_nick) + "."
+        else:
+            data = display_chan(words[1]) + display_rank("1",k_adminNick) + " a kické "+  display_rank(k_rank,k_nick) + "."
+    return data
+
+def display_leave(data, words):
+    if(words[3] == nick):
+        data = "Vous venez de quitter le channel "+words[1]+"."
+    else:
+        data = words[3] + " a quitté le channel."
+        if(words[2] == "1"):
+            if(words[3] == nick):
+                data += " Vous devenez administrateur."
+            else:
+                data += " " + words[4] +" devient administrateur."  
+    return data
+
+#------- main display function:
 def display(s,data):
     
     global file_recv
@@ -193,25 +228,9 @@ def display(s,data):
         elif(cmd == "LIST"):
             data = "Channels actifs :\n- " + ('\n- '.join(data for data in words[1:]))
         elif(cmd == "JOIN"):
-            j_channel, j_rank, j_nick = words[1:]
-            if(j_rank=="0"):
-                if(j_nick == nick):
-                    data = display_chan(words[1]) + "Vous avez rejoint le channel."
-                else:
-                    data = display_chan(words[1]) + j_nick + " a rejoint le channel."
-            else:
-                data = "Vous venez de créer le channel " + j_channel
-
+            data = display_join(data, words)
         elif(cmd == "KICK"):
-            k_adminNick, k_rank, k_nick = words[2:]
-            if(k_nick==nick):
-                data = display_chan(words[1]) + display_rank("1",k_adminNick) + " vous a kické !"
-            else:
-                if(k_adminNick==nick):
-                    data = display_chan(words[1]) + "Vous avez kické " + display_rank(k_rank,k_nick) + "."
-                else:
-                    data = display_chan(words[1]) + display_rank("1",k_adminNick) + " a kické "+  display_rank(k_rank,k_nick) + "."
-
+            data = display_kick(data, words);
         elif(cmd == "REN"):
             data = display_chan(words[1]) + display_rank("1",words[2]) + " a renommé le channel en " + words[3]+ "."
             
@@ -222,16 +241,8 @@ def display(s,data):
             data = string
             
         elif(cmd == "LEAVE"):
-            if(words[3] == nick):
-                data = "Vous venez de quitter le channel "+words[1]+"."
-            else:
-                data = words[3] + " a quitté le channel."
-                if(words[2] == "1"):
-                    if(words[3] == nick):
-                        data += " Vous devenez administrateur."
-                    else:
-                        data += " " + words[4] +" devient administrateur."
-                        
+            data = display_leave(data, words)
+            
         elif(cmd == "BYE"):
             data = words[1] + " a quitté le serveur."
             

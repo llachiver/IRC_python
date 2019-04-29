@@ -73,10 +73,14 @@ def log(data):
 #--------------- SEND FONCTIONS ----------------------
     
 #Send to all users connected to the sender's channel.
-def send_channel(string, clt_sender, self=False):
-    log(string + " IN " + clients[clt_sender][3] + "\n")
+def send_channel(string, clt_sender, self=False, channel=None):
+    target = clients[clt_sender][3]
+    if(channel != None):
+        target = channel
+    log(string + " IN " + target + "\n")
     string += "\n"
-    for i in channels[clients[clt_sender][3]]:
+    
+    for i in channels[target]:
         if(i != clt_sender):
             i.send(string.encode())
     if(self):
@@ -465,11 +469,11 @@ def picrom_leave(clt, brutal = False):
             send(("LEAVE " + result[1] + " 1 " + clients[clt][1]), clt) #send only to exiter
     else:
         if(len(result) == 2):
-            send_channel(("LEAVE "   + result[1] + " 0 " + clients[clt][1]), result[0])
+            send_channel(("LEAVE "   + result[1] + " 0 " + clients[clt][1]), result[0], True, result[1]) #True important because broadcaster has changed
             if(not brutal):
                 send(("LEAVE "   + result[1] + " 0 " + clients[clt][1]), clt)
         else:
-            send_channel(("LEAVE "   + result[2] + " 1 " + clients[clt][1] + " " + result[1] ), result[0])
+            send_channel(("LEAVE "   + result[2] + " 1 " + clients[clt][1] + " " + result[1] ), result[0], True, result[2])
             if(not brutal):
                 send(("LEAVE "   + result[2] + " 1 " + clients[clt][1] + " " + result[1] ), clt)
 
