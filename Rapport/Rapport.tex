@@ -6,7 +6,8 @@
 \usepackage[francais]{babel}
 \usepackage{hyperref}
 \usepackage{pifont}
-
+\usepackage{algorithmic}
+\usepackage{algorithm}
 
 \title{Projet réseau - Chat Python}
 \author{Loïc Lachiever}
@@ -169,7 +170,67 @@ la commande : \emph{python3 server.py}
 
 
 \subsection{Implémentation}
+\noindent{\underline{Fonctionnement général:}}
+\\Au lancement du serveur, son socket est initialisé, ensuite le serveur répète indéfiniment
+les opérations suivantes:
+\\La fonction $select()$ de la librairie du même nom détecte les sockets qui essaient d'envoyer
+une information.
+\\Pour chacun de ces sockets:
+\\Si le socket est le socket serveur lui même, nous appelons la fonction pour une nouvelle connexion client.
+\\Sinon la donnée est récupérée et transformée en chaîne de caractères
+, ensuite en fonction du type de commande protocole, le programme appelle la fonction
+de traitement adapté qui effectue l'action.
+\\
 
+\noindent{\underline{Structures de données:}}
+\\Pour garder en mémoire les informations nécessaires à sa gestion, le serveur utilise plusieurs
+structures de données. La plupart sont des dictionnaires ou des $set()$ pour avoir un temps
+d'accès instantané.
+\\Les $channel$ disponibles sont stockés dans un dictionnaire qui pour chaque nom de $channel$
+associe une liste de sockets clients. L'intérêt de la liste permet de trouver rapidement
+le prochain admin si le dernier a quitté le canal, il se trouve en tête de liste.
+On notera l'existence du $set()$ "waiting\_room" pour stocker les clients connectés mais n'ayant pas
+encore choisi de pseudo.
+\\Un autre dictionnaire permet de garder les informations clients, à la clé "socket client"
+est associée une liste de 4 valeurs : [IP, pseudo, 1 si admin 0 sinon, $channel$ courant].
+\\L'IP permettra de bannir un client, lors d'une requête client le pseudo peut être rapidement retrouvé tout comme le 
+$channel$ d'où elle a été envoyée. L'entier permet aussi de savoir si le client est administrateur.
+\\En plus de cet entier, un dictionnaire associe pour chaque nom de $channel$ un $set()$
+contenant les administrateurs du $channel$, ajouté pour avoir plusieurs administrateurs on
+peut facilement savoir combien il y a d'admins et qui ils sont.
+\\Pour éviter les doublons de noms de $channels$ ou de pseudonymes, deux $set()$ enregistrent
+les noms.
+\\
+
+\noindent{\underline{Fonction de traitement:}}
+Lorsque le serveur reçoit une commande client "COMMAND" par exemple, le serveur appelle
+la fonction "picrom\_command()" qui va effectuer l'action demandée. Ces fonctions ont toutes
+le même fonctionnement:
+\\-- Vérification des cas d'erreurs (client cible inconnu, besoin d'être admin,...)
+\\-- Modification des structures de données (traitement de l'action)
+\\-- Retour serveur au client, à la cible, ou à tous les clients du $channel$ ou du serveur
+\\Pour cette dernière étape, 3 fonctions permettent d'envoyer aux clients voulus les retours.
+"send()",
+"send\_all()" et "send\_channel", les 3 en profitent pour laisser une trace dans le $log$ serveur.
+\\
+
+\noindent{\underline{Choix et optimisations:}}
+L'utilisation des dictionnaires et des $set()$ permet d'éviter énormément de parcours
+de listes et rend la complexité bien meilleure. Cependant s'il est facile de récupérer le
+pseudo d'un client en connaissant son socket, l'inverse nécessite de parcourir les clients
+dans un $channel$. Nous pourrions améliorer ceci avec un autre $set()$.
+\\C'est également en ajoutant le système de $channel$ courant que nous avons pensé ajouter
+une structure association à un client la liste des $channels$ rejoint. Mais finalement le
+gain de complexité est difficile à calculer, en effet cette structure améliorerait la complexité
+de BYE et LEAVE qui ne dépendrait plus que du nombre de $channels$ rejoints et pas du nombre total.
+Mais l'efficacité de REN qui dépendait du nombre de clients sur le $channel$ dépendrait du nombre de clients
+total. Il faudrait savoir qu'elle valeur risque d'être la plus grande et quelle commande serait
+le plus utilisée en pratique.
+\\Nous envisagerons le passage vers cette nouvelle structure quand nous ajouterons celle qui
+associe les sockets aux pseudos.
+\\
+
+\noindent{\underline{Echange de fichiers:}}
 
 \section{Client}
 
