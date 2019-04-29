@@ -203,6 +203,38 @@ def display_leave(data, words):
                 data += " " + words[4] +" devient administrateur."  
     return data
 
+def display_nick(data, words):
+    rank,oldNick,newNick = words[1:]
+    if(oldNick == nick):
+        data = "Vous vous êtes renommé en " + newNick + "."
+        nick = newNick
+    else:
+        data = oldNick + " s'est renommé en " + newNick + "."
+    return data
+
+def display_grant(data, words):
+    chan, adminNick, newAdmin = words[1:]
+    if(newAdmin == nick):
+        data = display_chan(chan) + display_rank("1",adminNick) + " vous a OPé."
+    else:
+        data = display_chan(chan) + display_rank("1",adminNick) + " a OPé " + newAdmin + "."
+    return data
+
+def display_revoke(data, words):
+    chan, adminNick, oldAdmin = words[1:]
+    if(oldAdmin == nick):
+        data = display_chan(chan) + display_rank("1",adminNick) + " vous a dé-OPé."
+    else :
+        data = display_chan(chan) + display_rank("1",adminNick) + " a dé-OPé " + oldAdmin + " admin."
+    return data
+
+def display_who(data, words):
+    string = "Utilisateurs sur le channel :"
+    for i in range(1, len(words), 2):
+        string += "\n- " + display_rank(words[i],words[i+1]) 
+    data = string
+    return data
+
 #------- main display function:
 def display(s,data):
     
@@ -222,58 +254,20 @@ def display(s,data):
         elif(cmd == "CONNECT"):
             data = words[1] + " a rejoint le serveur."
         elif(cmd == "MSG"):
-            data =  display_chan(words[1]) + display_rank(words[2],words[3]) + " > " + (' '.join(data for data in words[4:]))
+            data =  display_chan(words[1]) + display_rank(words[2],words[3]) + " > " + (' '.join(words[4:]))
         elif(cmd == "PRV_MSG"):
-            data = display_chan(words[1]) + display_rank(words[2],words[3]) + ' (vous chuchote) > ' + (' '.join(data for data in words[4:]))
+            data = display_chan(words[1]) + display_rank(words[2],words[3]) + ' (vous chuchote) > ' + (' '.join(words[4:]))
         elif(cmd == "LIST"):
-            data = "Channels actifs :\n- " + ('\n- '.join(data for data in words[1:]))
+            data = "Channels actifs :\n- " + ('\n- '.join(words[1:]))
         elif(cmd == "JOIN"):
             data = display_join(data, words)
         elif(cmd == "KICK"):
             data = display_kick(data, words);
-        elif(cmd == "REN"):
-            data = display_chan(words[1]) + display_rank("1",words[2]) + " a renommé le channel en " + words[3]+ "."
-            
-        elif(cmd == "WHO"):
-            string = "Utilisateurs sur le channel :"
-            for i in range(1, len(words), 2):
-                string += "\n- " + display_rank(words[i],words[i+1]) 
-            data = string
-            
-        elif(cmd == "LEAVE"):
-            data = display_leave(data, words)
-            
-        elif(cmd == "BYE"):
-            data = words[1] + " a quitté le serveur."
-            
-        elif(cmd == "CURRENT"):
-            data = "Vous êtes dans le channel "+words[1]+"."
-            
-        elif(cmd == "NICK"):
-            rank,oldNick,newNick = words[1:]
-            if(oldNick == nick):
-                data = "Vous vous êtes renommé en " + newNick + "."
-            else:
-                data = oldNick + " s'est renommé en " + newNick + "."
-            
-        elif(cmd == "GRANT"):
-            chan, adminNick, newAdmin = words[1:]
-            if(newAdmin == nick):
-                data = display_chan(chan) + display_rank("1",adminNick) + " vous a OPé."
-            else:
-                data = display_chan(chan) + display_rank("1",adminNick) + " a OPé " + newAdmin + "."
-            
-        elif(cmd == "REVOKE"):
-            chan, adminNick, oldAdmin = words[1:]
-            if(oldAdmin == nick):
-                data = display_chan(chan) + display_rank("1",adminNick) + " vous a dé-OPé."
-            else :
-                data = display_chan(chan) + display_rank("1",adminNick) + " a dé-OPé " + oldAdmin + " admin."
-
+        
         elif(cmd == "SEND"):
             global file_send
             state = words[1]
-            if(state=='0'):
+            if(state == '0'):
                 print('Démarrage du transfert de '+file_send.name+'.')
                 picrom_sendf(s)
                 return
@@ -281,7 +275,6 @@ def display(s,data):
                 print('Transfert de '+file_send.name+' terminé !')
                 file_send.close()
                 return
-
         elif(cmd == "RECV"):
             if(len(words)==1):
                 print("Démarrage du transfert de "+file_recv.name+".")
@@ -292,8 +285,38 @@ def display(s,data):
         elif(cmd == "SENDF"):
             picrom_sendf(s)
             return
+        else:
+            data = display2(cmd, s, data, words)
+            
             
         print(data)
+
+def display2(cmd, s, data, words): #second function to have complexity < C, yes I know it's dirty
+    if(cmd == "REN"):
+        data = display_chan(words[1]) + display_rank("1",words[2]) + " a renommé le channel en " + words[3]+ "."
+    
+    elif(cmd == "WHO"):
+        data = display_who(data, words)
+        
+    elif(cmd == "LEAVE"):
+        data = display_leave(data, words)
+            
+    elif(cmd == "BYE"):
+        data = words[1] + " a quitté le serveur."
+            
+    elif(cmd == "CURRENT"):
+        data = "Vous êtes dans le channel "+words[1]+"."
+            
+    elif(cmd == "NICK"):
+        data = display_nick(data, words)
+    elif(cmd == "GRANT"):
+        data = display_grant(data, words)
+            
+    elif(cmd == "REVOKE"):
+        data = display_revoke(data, words)
+    return data
+
+        
     
 #--------- CONNECTION -------------
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
