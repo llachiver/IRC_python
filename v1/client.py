@@ -137,21 +137,21 @@ def send(msg,s):
 
 def picrom_sendf(s):
     global file_send
-    l=file_send.read(1024)
+    l=file_send.read(1024 - len("SENDF "))
     if(len(l) != 0):
         data = "SENDF ".encode()+l
-        print(data)
         s.send(data)
     else:
         s.send("SENDF".encode())
+        file_send.close()
 
 def picrom_recvf(s,data):
     global file_recv
     if(len(data)>6):   #if we have data after RECVF
         file_recv.write(data[6:])
+        s.send("RECVF".encode())
     else:
         print("Téléchargement de "+file_recv.name+"  terminé.")
-        s.send("RECV 1".encode())
         file_recv.close()
 
 
@@ -269,7 +269,11 @@ def display(s,data):
                 file_send.close()
 
         elif(cmd == "RECV"):
-            print(words[1] + " vous a envoyé un fichier. Faites /RECV <filename> pour le télécharger.")
+            if(len(words)==1):
+                print("Démarrage du transfert de "+file_recv.name+".")
+                s.send("RECVF".encode())
+                return
+            data = words[1] + " vous a envoyé un fichier. Faites /RECV <filename> pour le télécharger."
 
         elif(cmd == "SENDF"):
             picrom_sendf(s)

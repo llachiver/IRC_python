@@ -19,8 +19,8 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - /NICK (newNick)
 - /CURRENT
 - /CURRENT (newCurrentChannel)
-- /SEND (nick) (path/to/file)
-- /RECV (path/to/file)
+- /SEND (nick) (fileName)
+- /RECV (outputFileName)
 
 ## Admins commands:
 - /KICK (nick)
@@ -45,11 +45,9 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (E) CURRENT (newCurrentChannel or void)
 - (I) GRANT (newAdmin)
 - (I) REVOKE (oldAdmin)
-
 - (I) SEND (nick) (file_name)
-- (I) SENDF (file_package)          //will be sent untill the transfer is complete
-
-- (I) RECV (0 : waiting for transfer | 1 : transfer complete)
+- (I) SENDF (package or void) : will be sent untill the transfer is complete
+- (I) RECV : demand to receive our file
 
 
 
@@ -75,11 +73,10 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (B)CURRENT (currentChannel)
 - (CS)GRANT (channel) (adminNick) (newAdmin)
 - (CS)REVOKE (channel) (adminNick) (oldAdmin)
-
-- (T) SEND (0 : waiting for transfer | 1 : transfer complete)
-
-- (T) RECV (sender_nick)        //to notify the recipient he received a file from sender_nick
-- (I) RECVF (file_package)                                                 //will be sent untill the transfer is complete
+- (B) SEND (0 : waiting for transfer | 1 : transfer complete)
+- (B) SENDF : package reception ok, waiting for the following
+- (T|B) RECV (sender_nick | void) : to notify the recipient he received a file from sender_nick | your are ready to RECVF
+- (B) RECVF (file_package or void) : will be sent untill the transfer is complete
 
 
 

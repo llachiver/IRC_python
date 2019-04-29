@@ -208,7 +208,6 @@ def picrom_send(clt, args):
 #LOOP FOR SENDING PACKAGES
 def picrom_sendF(clt,data):
     f = file_transfered[clt]
-    print(data)
     
     if(len(data)>6):   #if we have data after SENDF
         f.write(data[6:])
@@ -222,7 +221,6 @@ def picrom_sendF(clt,data):
         send("ERR 4", clt)      #we send "user not found" to the sender
         os.remove(f.name)       #we remove the file
     else:
-        log(clients[clt][1] + " a transféré " + f.name + ".")
         send("SEND 1",clt)
         send("RECV "+clients[clt][1],targetSoc)  #else, we notify the recipient that he received a file
     del file_transfered[clt]
@@ -230,36 +228,42 @@ def picrom_sendF(clt,data):
 
 
 #------------ RECV FILE FUNCTIONS --------------
-def picrom_recv(clt, args):
+def picrom_recv(clt):
     
     channel = clients[clt][3]
     
     if(channel == "HUB"):
         send("ERR 5", clt)
         return
-    if(len(args) != 1):
-        send("ERR 9", clt)
+
+    nick = clients[clt][1]
+
+    filename = find(nick+"_*")       #search for the file beggining by the nick
+    if(filename == None):
+        send("ERR 13",clt)
+        return
+    
+    file = open(filename,'rb')
+    file_transfered[clt]=file
+    send("RECV",clt)                #confirms to the client that the file exist
+    
+    
+def picrom_recvf(clt):
+
+    l=file_transfered[clt].read(1024 - len("RECVF "))
+    
+    if(len(l) != 0):
+        data = "RECVF ".encode()+l
+        clt.send(data)
         return
 
+    filename = file_transfered[clt].name
+    file_transfered[clt].close
+    os.remove(filename)
+
+    del file_transfered[clt]
     
-    state = args[0]
-    nick = clients[clt][1]
-    if(state == "0"):
-        filename = find(nick+"_*")       #search for the file beggining by the nick
-        if(filename == None):
-            send("ERR 13",clt)
-            return
-        else:
-            file = open(filename,'rb')
-            l=file.read(1024)    
-            while(l):
-                data = "RECVF ".encode()+l
-                clt.send(data)
-                l=file.read(1024)
-            
-            log('Trasnfert de '+file.name+' à '+nick+' terminé.')
-            os.remove(file.name)
-            clt.send("RECVF".encode())
+    send("RECVF", clt)
     
 
 #LOOP FOR SENDING PACKAGES
@@ -651,7 +655,9 @@ while(True):
                     elif(command == "SEND"):
                         picrom_send(s_clt, args)
                     elif(command == "RECV"):
-                        picrom_recv(s_clt, args)
+                        picrom_recv(s_clt)
+                    elif(command == "RECVF"):
+                        picrom_recvf(s_clt)
                     else:
                         send("ERR 0", s_clt)                #unknown command
                
