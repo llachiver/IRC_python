@@ -348,12 +348,16 @@ def picrom_prv_msg(clt, args):
         send("ERR 5", clt)
         return
 
-    nbTargets = int(args[0])
+    try:
+        nbTargets = int(args[0])
+    except ValueError:
+        send("ERR 9", clt)
+        return
     if((len(args)) <= nbTargets + 1):
         send("ERR 9", clt)
         return
     
-    message = ' '.join(word for word in args[nbTargets:])
+    message = ' '.join(word for word in args[(nbTargets + 1):])
     
     for i in range(1, nbTargets+1):
         target = args[i]

@@ -84,7 +84,8 @@ def send(msg,s):
                     print('Erreur : la commande MSG attend 3 arguments minimum.')
                     return
                 else:
-                    data = "PRV_MSG " + msg[5:]
+                    targets = words[1].split(';')
+                    data = "PRV_MSG " + str(len(targets)) + " " + (' '.join(targets)) + " " + (' '.join(words[2:]))
                     
             elif(cmd=="/BYE"):
                 exit()
@@ -188,7 +189,7 @@ def display(s,data):
         elif(cmd == "MSG"):
             data =  display_chan(words[1]) + display_rank(words[2],words[3]) + " > " + (' '.join(data for data in words[4:]))
         elif(cmd == "PRV_MSG"):
-            data = display_chan(words[1]) + display_rank(words[2],words[3]) + ' (vous chuchute) > ' + (' '.join(data for data in words[4:]))
+            data = display_chan(words[1]) + display_rank(words[2],words[3]) + ' (vous chuchote) > ' + (' '.join(data for data in words[4:]))
         elif(cmd == "LIST"):
             data = "Channels actifs :\n- " + ('\n- '.join(data for data in words[1:]))
         elif(cmd == "JOIN"):
@@ -264,9 +265,11 @@ def display(s,data):
             if(state=='0'):
                 print('Démarrage du transfert de '+file_send.name+'.')
                 picrom_sendf(s)
+                return
             if(state == "1"):
                 print('Transfert de '+file_send.name+' terminé !')
                 file_send.close()
+                return
 
         elif(cmd == "RECV"):
             if(len(words)==1):
