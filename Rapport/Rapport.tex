@@ -235,6 +235,31 @@ associe les sockets aux pseudos.
 \section{Client}
 
 \subsection{Documentation}
+Le serveur peut-être lancé UNIQUEMENT depuis un terminal linux avec
+la commande : \emph{python3 client.py}
+\\\ding{88} : Nécessite les droits administrateurs
+\\\noindent{\textbf{Commandes disponibles:}}
+\begin{description}
+    \item[---/HELP] affiche la liste des commandes disponibles
+\item[---/LIST] affiche les $channels$ ouverts
+\item[---/JOIN <channel>] pour rejoindre (ou créer) un $channel$
+\item[---/LEAVE] pour quitter le canal courant
+\item[---/WHO] affiche les utilisateurs sur le canal
+\item[---<message>] envoi un message sur le $channel$
+\item[---/MSG <nick1;nick2;...> <message>] pour envoyer un message privé à un ou plusieurs clients
+\item[---/BYE] pour se déconnecter du serveur
+\item[---/KICK <pseudo>]\ding{88} éjecte un utilisateur du canal
+\item[---/REN <channel>]\ding{88} change le nom du canal
+\item[---/CURRENT] affiche le nom du $channel$ courant
+\item[---/CURRENT <channel>] défini le $channel$ courant
+\item[---/NICK <nouveauPseudo>] pour changer de pseudo
+\item[---/GRANT <pseudo>]\ding{88} pour rendre un utilisateur admin
+\item[---/REVOKE <pseudo>]\ding{88} pour destituer un admin
+\item[---/SEND <pseudo> <nomDuFichier>] envoyer un fichier à destination d'un client
+\item[---/RECV <nomDuFichier>] récupérer un fichier qui vous est destiné
+\end{description}
+
+
 
 \subsection{Implémentation}
 
