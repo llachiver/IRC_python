@@ -108,6 +108,10 @@ la commande : \emph{python3 server.py}
                                                 un client sur le $channel$ 
     \item[---REVOKE <oldAdminNick>] \ding{88}\ding{108} l'administrateur veut destituer 
                                             un admin sur le $channel$
+    \item[---SEND <nick> <file\_name>] \ding{108} demande d'envoi de fichier au serveur, à destination de nick
+    \item[---SENDF <package> | void ] \ding{108} envoi d'une partie du fichier | SENDF seul pour indiquer la fin de la transmission
+    \item[---RECV] \ding{108} demande de réception d'un fichier qui nous est destiné.
+    \item[---RECVF] \ding{108} demande du paquet suivant
     \\
 \end{description}
 
@@ -147,6 +151,10 @@ la commande : \emph{python3 server.py}
     \item[---CURRENT <currentChannel>] \ding{108} indique au client son $channel$ courant ou celui qu'il vient de définir
     \item[---GRANT <channel> <adminNick> <newAdmin>] \ding{110}\ding{54} newAdmin a été promu admin par adminNick dans le $channel$
     \item[---REVOKE <channel> <adminNick> <oldAdmin>] \ding{110}\ding{54} oldAdmin n'est plus administrateur
+    \item[---SEND <0 | 1>] \ding{108} Attente du premier paquet | confirmation de la fin du transfert
+    \item[---SENDF] \ding{108} réception du paquet ok, en attente du prochain
+    \item[---RECV <sender\_nick | >]\ding{88} |\ding{108} Indique au destinataire qu'un fichier l'attend | demande du paquet suivant
+    \item[---RECVF <file\_package | >] : \ding{108} envoie un paquet | téléchargement terminé vous avez tout reçu
     \\
 \end{description}
 
@@ -167,6 +175,8 @@ la commande : \emph{python3 server.py}
     \item[ERR 10] Vous essayez de JOIN ou CURRENT le $channel$ spécial "HUB"
     \item[ERR 11] Vous essayez de JOIN un $channel$ déjà rejoint, ou de CURRENT votre $channel$ courant
     \item[ERR 12] Vous voulez GRANT un admin ou REVOKE un non-admin
+    \item[ERR 13] Aucun fichier ne vous est destiné
+    \item[ERR 14] Un fichier est déjà en cours d'acheminement pour ce destinataire
 \end{description}
 
 
