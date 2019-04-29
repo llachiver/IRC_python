@@ -139,7 +139,7 @@ def picrom_sendf(s):
     global file_send
     l=file_send.read(1024)
     while(l):
-        data = "SENDF".encode()+l
+        data = "SENDF ".encode()+l
         time.sleep(0.001)        #for letting the time to the program
         s.send(data)
         l=file_send.read(1024)
