@@ -579,10 +579,15 @@ log("<========= START SERVER on port "+ str(PORT) + " =========>\n")
 
 #LOOPBACK:
 while(True):
-    (connected, _, _) = select.select( sockets + [serverSoc], [], [])
+    (connected, _, _) = select.select( sockets + [serverSoc] + [sys.stdin], [], [])
     
     #browse all connected sockets
     for s_clt in connected:
+        if(type(s_clt) != socket.socket): #case of input in server
+            msg = sys.stdin.readline()
+            print(msg)
+            continue
+        
         if (s_clt == serverSoc): #case of new connection
             
             (soc,addr) = serverSoc.accept()
@@ -598,18 +603,18 @@ while(True):
                 line = s_clt.recv(1024)
             except:
                 picrom_bye(s_clt)
-                break
+                continue
             
             if(len(line) == 0): #if a client leaves the server by send void data
                 picrom_bye(s_clt)
-                break
+                continue
                 
             else: #the client send a command
                 if(len(line)>=5):
                     header = line[0:5]
                     if(header == b'SENDF'):
                         picrom_sendF(s_clt,line)
-                        break   
+                        continue  
                 words = line.decode().split()
                 command = ""
                 args = ""
