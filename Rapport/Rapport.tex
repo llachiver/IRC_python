@@ -223,7 +223,7 @@ le même fonctionnement:
 \\-- Retour serveur au client, à la cible, ou à tous les clients du $channel$ ou du serveur
 \\Pour cette dernière étape, 3 fonctions permettent d'envoyer aux clients voulus les retours.
 "send()",
-"send\_all()" et "send\_channel", les 3 en profitent pour laisser une trace dans le $log$ serveur.
+"send\_all()" et "send\_channel", les 3 en profitent pour laisser une trace dans le $log$ serveur, où chaque trame est stockée avec date et heure.
 \\
 
 \noindent{\underline{Choix et optimisations:}}
@@ -301,49 +301,54 @@ Voilà les variables et structures utilisées :
 Tout d'abord, le client rentre dans une boucle qui teste si le nick entré est bien valide, que ce soit côté client (si le nick n'est pas vide) et côté serveur (s'il n'est pas déjà utilisé).
 \\On rentre ensuite dans la boucle principale.
 \\Afin de ne pas bloquer les retours serveur, on utilise select.select pour traiter les données du "premier qui parle" entre le socket de connexion et sys.stdin.
-\\Ainsi, le client peut taper son message mais par contre les retours serveurs sont synchronisés avec ce qu'il tape. Pour éviter cela, il faudrait désactiver les entrées canoniques (avec tty.setraw(sys.stdin)), mais cette solution n'est pas viable sous Windows, donc nous ne l'avons pas adoptée.
+\\Par contre, avec cette méthode, les retours serveurs sont synchronisés avec ce qu'il tape. Pour éviter cela, il faudrait désactiver les entrées canoniques (avec tty.setraw(sys.stdin)), mais cette solution n'est pas viable sous Windows, donc nous ne l'avons pas adoptée.
 \\Ensuite, en fonction de l'entrée sélectionnée on exécute la fonction send (si c'est une entrée utilisateur) ou display (si c'est un retour serveur).
 \\Pour chaque commande entrée, on teste le nombre d'arguments et on construit la trame PICROM correspondante avec la fonction send. 
-Quant à la fonction display, elle récupère les arguments des trames PICROM et affiche les messages correspondants, avec : 
-- c'est à dire le channel (si nécessaire)
-- les pseudos (avec affichage des admins grâce à la fonction display\_rank)
-- les eventuelles erreurs (avec le dictionnaire err\_msg)
-- les informations serveurs (quand un utilisateur join, leave, change de pseudo, kick, OP etc.)
+Quant à la fonction display, elle récupère les arguments des trames PICROM et affiche les messages correspondants, avec : \\
+- c'est à dire le channel (si nécessaire)\\
+- les pseudos (avec affichage des admins grâce à la fonction display\_rank)\\
+- les eventuelles erreurs (avec le dictionnaire err\_msg)\\
+- les informations serveurs (quand un utilisateur join, leave, change de pseudo, kick, OP etc.)\\
 
 Exemple d'affichage côté client :
+\\
+\\
+\#chanL2Info | Romain a rejoint le channel.\\
+\#chanL2Info | Loic a rejoint le channel.\\
+\#chanL2Info | @GBlin@ > Qu'est-ce que la feuille d'un arbre ?\\
+\#chanL2Info | Loic > En morphologie végétale, c'est l'organe spécialisé dans la photosynthèse chez les végétaux supérieurs.\\
+\#chanL2Info | Romain > C'est un noeud qui n'a pas de fils.\\
+\#chanL2Info | @GBlin@ a kické Loic !\\
+\#chanL2Info | @GBlin@ a OPé Romain.\\
+\#chanL2Info | @Romain@ > yes !\\
 
-\begin{verbatim}
-#chanL2Info | Romain a rejoint le channel.
-#chanL2Info | Loic a rejoint le channel.
-#chanL2Info | @GBlin@ > Qu'est-ce que la feuille d'un arbre ?
-#chanL2Info | Loic > En morphologie végétale, c'est l'organe spécialisé dans la photosynthèse chez les végétaux supérieurs.
-#chanL2Info | Romain > C'est un noeud qui n'a pas de fils.
-#chanL2Info | @GBlin@ a kické Loic !
-#chanL2Info | @GBlin@ a OPé Romain.
-#chanL2Info | @Romain@ > yes !
-\end{verbatim}
 
 \section{Problèmes recontrés :}
 
-1)
+\noindent{\underline{Structures de données du serveur : }}
+Nous voulions garantir un temps d'accès constant aux données côté serveur. Ainsi, nous avons souvent changé de stratégie
+pour stocker les données du client pour finalement utiliser des dictionnaires dans la plupart du temps.
+\\
 
+\noindent{\underline{Envoi de fichiers encodés (SEND et RECV) : }}
+\\
 Il est facile d'écrire et d'envoyer des données de fichiers en clair (fichiers textes, par exemple). On peut les ouvrir avec la fonction open('filename','r')
 Par contre, les pdf, images ou autres fichiers non clairs sont ouverts avec l'argument 'rb' au lieu de 'r'.
 Cela change notre manière de décoder les trames côté serveur, car cela veut dire que SENDF envoie des données non claires.
 Les fonctions decode(), split() etc. ne peuvent pas s'appliquer aux trames dont l'entête est SENDF car ce ne sont pas de simples chaînes de caractères.
 Pour détecter une entête SENDF, on doit donc la comparer avec b"SENDF", qui correspond à la valeur encodée de "SENDF". Si ce n'est pas cette entête, alors on peut se permettre de décoder la trame.
-
-2) 
+\\
+\noindent{\underline{Emplacement des fichiers à envoyer (SEND) : }}
 En argument de la fonction SEND, il est demandé dans le cahier des charges de spécifier <file/to/path>.
 Sur Windows, les chemins d'accès à un fichier sont de cette forme : C:\\Users\\picrom\\test.py, alors que sur Linux les "\\" sont remplacés par des "/".
 Cela complique donc la gestion des répertoires, nous avons finalement opté pour mettre le fichier à envoyer dans le même dossier que "client.py", ce qui est plus simple.
 De même côté serveur, le fichier sera téléchargé dans le même dossier que server.py.
-
-3)
-Au départ, on lisait le fichier par paquet de 1024 bits. En ajoutant l'entête "SENDF + paquet", on envoyait donc une trame plus grande que 1024 bits.
+\\
+\noindent{\underline{Synchronisation serveur / client (SEND et RECV) : }}
+Au départ, on lisait le fichier par paquet de 1024 bits et on envoyait ces paquets avec l'entête "SENDF ".
 La fonction listen du socket server avait pour argument 1500. Le serveur attendait donc des trames de 1500 bits.
-Par conséquent, le serveur concaténait plusieurs trames en une seule, ce qui fait qu'il essayait de décoder des entêtes correspondantes aux données des fichiers envoyés, ce quie le faisait planter.
-Nous avons donc synchronisé le serveur avec le client à 1024 bits afin d'être sûr de recevoir les bonnes trames.
+Par conséquent, le serveur concaténait plusieurs trames en une seule et donc essayait parfois de décoder des trames correspondantes aux données brutes des fichiers envoyés, ce qui le faisait planter.
+Nous avons donc synchronisé le serveur avec le client à 1024 bits de longueur de trame maximale afin d'être sûr de recevoir les bonnes trames.
 
 
 \section{Conclusion}
