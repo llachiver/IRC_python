@@ -85,6 +85,7 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 ## Input commands (in Serv shell):
 - GLOBAL (message): send a message to everyone
 - KILL (nick) : force someone to bye server
+- BAN (nick) : KILL theuser and ban his IP
 
 
 
@@ -117,3 +118,4 @@ With (R) : rank, 0 if normal, 1 if admin
 - ERR 12 GRANT admin or REVOKE muggle
 - ERR 13 don't have any file for the client
 - ERR 14 a file has already been sent to this recipient
+- ERR 15 your IP is banned

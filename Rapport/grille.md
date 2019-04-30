@@ -33,4 +33,4 @@
 | -------------------------------------- | ----------- |
 | send message to all users (GLOBAL)     |      10     |
 | forces BYE on an user (KILL)           |      10     |
-| bonus 3 (/CMD3)                        |             |
+| ban a client, blacklist its IP (BAN)   |      10     |
