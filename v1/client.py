@@ -165,6 +165,7 @@ def display_chan(chan): #usefull function to quick generate admin symbol by read
 
 #------- displays functions to clarify code:
 def display_join(words):
+    global nick
     j_channel, j_rank, j_nick = words[1:]
     if(j_rank=="0"):
         if(j_nick == nick):
@@ -176,6 +177,7 @@ def display_join(words):
     return data
 
 def display_kick(words):
+    global nick
     k_adminNick, k_rank, k_nick = words[2:]
     if(k_nick == nick):
         data = display_chan(words[1]) + display_rank("1",k_adminNick) + " vous a kické !"
@@ -199,6 +201,7 @@ def display_leave(words):
     return data
 
 def display_nick(words):
+    global nick
     rank,oldNick,newNick = words[1:]
     if(oldNick == nick):
         data = "Vous vous êtes renommé en " + newNick + "."
@@ -208,6 +211,7 @@ def display_nick(words):
     return data
 
 def display_grant(words):
+    global nick
     chan, adminNick, newAdmin = words[1:]
     if(newAdmin == nick):
         data = display_chan(chan) + display_rank("1",adminNick) + " vous a OPé."
@@ -216,6 +220,7 @@ def display_grant(words):
     return data
 
 def display_revoke(words):
+    global nick
     chan, adminNick, oldAdmin = words[1:]
     if(oldAdmin == nick):
         data = display_chan(chan) + display_rank("1",adminNick) + " vous a dé-OPé."
