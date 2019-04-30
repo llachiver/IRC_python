@@ -215,7 +215,7 @@ def picrom_sendF(clt,data):
     
     if(len(data)>6):   #if we have data after SENDF
         f.write(data[6:])
-        clt.send("SENDF".encode())   #waiting for the following
+        clt.send("SENDF\n".encode())   #waiting for the following
         return
     
     nick_recipient = f.name.split('_')[0]
