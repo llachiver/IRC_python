@@ -21,6 +21,7 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - /CURRENT (newCurrentChannel)
 - /SEND (nick) (fileName)
 - /RECV (outputFileName)
+- /HISTORY
 
 ## Admins commands:
 - /KICK (nick)
@@ -49,6 +50,7 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (I) SENDF (file_package or void) : will be sent untill the transfer is complete
 - (I) RECV : demands to receive the file
 - (I) RECVF : package reception ok, waiting for the following
+- (I) HISTORY
 
 
 
@@ -78,6 +80,7 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (B) SENDF : package reception ok, waiting for the following
 - (T|B) RECV (sender_nick | void) : to notify the recipient he received a file from sender_nick | your are ready to RECVF
 - (B) RECVF (file_package or void) : will be sent untill the transfer is complete
+- (R) HISTORY (channel) (0 : starting history | 1 : ending history)
 
 ## Input commands (in Serv shell):
 - GLOBAL (message): send a message to everyone

@@ -572,6 +572,16 @@ def picrom_revoke(clt, args):
     send_channel("REVOKE " + clients[clt][3] + " " + clients[clt][1] + " " + clients[targetSoc][1] , clt)    
 
 
+def picrom_history(clt):
+    channel = clients[clt][3]
+    if(channel == "HUB"):
+        send("ERR 5",clt)
+        return
+    l = [ line for line in open('log.log') if ('IN '+channel) in line]
+    send("HISTORY "+channel+" 0",clt)       #starting history
+    for i in range(len(l)):                 #loops through the filtered log lines
+        clt.send(l[i].encode())
+    send("HISTORY "+channel+" 1",clt)       #ending history
 
 def picrom_global(args):
     if (len(args) < 1):
@@ -711,6 +721,8 @@ while(True):
                         picrom_recv(s_clt)
                     elif(command == "RECVF"):
                         picrom_recvf(s_clt)
+                    elif(command == "HISTORY"):
+                        picrom_history(s_clt)
                     else:
                         send("ERR 0", s_clt)                #unknown command
                
