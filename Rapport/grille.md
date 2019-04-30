@@ -32,5 +32,5 @@
 | Commandes                              | Score (/10) |
 | -------------------------------------- | ----------- |
 | send message to all users (GLOBAL)     |      10     |
-| bonus 2 (/CMD2)                        |             |
+| forces BYE on an user (KILL)           |      10     |
 | bonus 3 (/CMD3)                        |             |

@@ -321,6 +321,12 @@ def display2(cmd, s, data, words): #second function to have complexity < C, yes 
 def display_server_commands(cmd, s, data, words):
     if(cmd == "GLOBAL"):
         data = "[Message Serveur] " + (' '.join(words[1:]))
+    if(cmd == "KILL"):
+        if(words[1] == nick):
+            data = "Un administrateur serveur vous a expulsé !"
+        else:
+            data = "Un administrateur serveur a expulsé " + words[1]
+    
     return data
         
     
