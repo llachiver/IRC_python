@@ -215,7 +215,7 @@ def picrom_sendF(clt,data):
     
     if(len(data)>6):   #if we have data after SENDF
         f.write(data[6:])
-        clt.send("SENDF".encode())   #waiting for the following
+        clt.send("SENDF\n".encode())   #waiting for the following
         return
     
     nick_recipient = f.name.split('_')[0]
@@ -567,6 +567,18 @@ def picrom_revoke(clt, args):
     send_channel("REVOKE " + clients[clt][3] + " " + clients[clt][1] + " " + clients[targetSoc][1] , clt)    
 
 
+
+def picrom_global(args):
+    if (len(args) < 1):
+        log("Output >>> ERR 9\n")
+        return
+    
+    message = ' '.join(args)
+    send_all("GLOBAL " + message,None)
+
+
+
+
 #starting server
 #-----------------------------------------------------
 serverSoc = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0) #socket d'écoute
@@ -579,10 +591,26 @@ log("<========= START SERVER on port "+ str(PORT) + " =========>\n")
 
 #LOOPBACK:
 while(True):
-    (connected, _, _) = select.select( sockets + [serverSoc], [], [])
+    (connected, _, _) = select.select( sockets + [serverSoc] + [sys.stdin], [], [])
     
     #browse all connected sockets
     for s_clt in connected:
+        if(type(s_clt) != socket.socket): #case of input in server
+            line = sys.stdin.readline()
+            log("Input >>> " + line)
+            words = line.split()
+            command = ""
+            args = ""
+            if(len(words) > 0):
+                command = words[0]
+                args = words[1:]
+            if(command == "GLOBAL"):
+                picrom_global(args)
+            else:
+                log("Output >>> ERR 0\n")
+                
+            continue
+        
         if (s_clt == serverSoc): #case of new connection
             
             (soc,addr) = serverSoc.accept()
@@ -598,18 +626,18 @@ while(True):
                 line = s_clt.recv(1024)
             except:
                 picrom_bye(s_clt)
-                break
+                continue
             
             if(len(line) == 0): #if a client leaves the server by send void data
                 picrom_bye(s_clt)
-                break
+                continue
                 
             else: #the client send a command
                 if(len(line)>=5):
                     header = line[0:5]
                     if(header == b'SENDF'):
                         picrom_sendF(s_clt,line)
-                        break   
+                        continue  
                 words = line.decode().split()
                 command = ""
                 args = ""
