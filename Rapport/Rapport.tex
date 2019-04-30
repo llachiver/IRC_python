@@ -159,6 +159,15 @@ la commande : \emph{python3 server.py}
     \\
 \end{description}
 
+\noindent{\textbf{\underline{Protocole Entrée serveur :}}}
+\\A saisir dans le terminal serveur : 
+\begin{description}
+    \item[---GLOBAL <message>] \ding{115} envoie un message à tout les clients sur le serveur
+    \item[---KILL <nick>] \ding{115} pour expulser un client du serveur
+    \item[---BAN <nick>] \ding{115} pour expulser un client et blacklister son adresse IP
+    \\
+\end{description}
+
 
 \noindent{\textbf{\underline{Protocole erreurs :}}}
 
@@ -178,6 +187,7 @@ la commande : \emph{python3 server.py}
     \item[ERR 12] Vous voulez GRANT un admin ou REVOKE un non-admin
     \item[ERR 13] Aucun fichier ne vous est destiné
     \item[ERR 14] Un fichier est déjà en cours d'acheminement pour ce destinataire
+    \item[ERR 15] Cette IP est bannie et ne peut se connecter
 \end{description}
 
 
@@ -323,7 +333,7 @@ Exemple d'affichage côté client :
 \#chanL2Info | @Romain@ > yes !\\
 
 
-\section{Problèmes recontrés :}
+\section{Problèmes rencontrés}
 
 \noindent{\underline{Structures de données du serveur : }}
 Nous voulions garantir un temps d'accès constant aux données côté serveur. Ainsi, nous avons souvent changé de stratégie
@@ -357,8 +367,10 @@ Nous avons donc synchronisé le serveur avec le client à 1024 bits de longueur 
 
 
 \section{Annexes}
-\noindent{\underline{Cahier des charges}
-{\large \textbf{\underline{Commandes client v0:}}}
+\textbf{\noindent{\underline{Cahier des charges:}}}
+
+
+{\underline{Commandes client v0:}}
 \begin{itemize}
     \item /HELP: print this message
     \item /LIST: list all available channels on server
@@ -372,7 +384,7 @@ Nous avons donc synchronisé le serveur avec le client à 1024 bits de longueur 
     \item /REN <channel>: change the current channel name [admin]
 \end{itemize}
 
-{\large \textbf{\underline{Commandes client v1:}}}
+{{\underline{Commandes client v1:}}
 \begin{itemize}
     \item /CURRENT: print current channel name
 \item /CURRENT <channel>: set current channel
@@ -383,8 +395,9 @@ Nous avons donc synchronisé le serveur avec le client à 1024 bits de longueur 
 \item /SEND <nick> </path/to/file>: send a file to a remote user
 \item /RECV </path/to/file>: receive a file and save it locally
 \item /HISTORY: print history of current channel (saved by server)
+\\
 \end{itemize}
-\noindent{\underline{Protocole SEND}
+\noindent{\textbf{\underline{Protocole SEND:}}}
 
 \includegraphics[height=15cm]{sendprotoc.png}
 

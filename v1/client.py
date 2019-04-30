@@ -41,7 +41,7 @@ file_recv = None
 
 
 cmd_list={"/HELP":0,"/LIST":0,"/JOIN":1,"/LEAVE":0,
-          "/WHO":0,"/MSG":-1,"/BYE":0,"/KICK":1,"/REN":1,"/CURRENT":-1,"/NICK":1,"/GRANT":1,"/REVOKE":1,"/SEND":2,"/RECV":1,"/HISTORY":0} #available commands with their number of arguments
+          "/WHO":0,"/MSG":-1,"/BYE":0,"/KICK":1,"/REN":1,"/CURRENT":-1,"/NICK":1,"/GRANT":1,"/REVOKE":1,"/SEND":2,"/RECV":1} #available commands with their number of arguments
 
 help_msg = "* /HELP: print this message\n* /LIST: list all available channels on server\n* /JOIN <channel>: join (or create) a channel\n* /LEAVE: leave current channel\n* /WHO: list users in current channel\n* <message>: send a message in current channel\n* /MSG <nick> <message>: send a private message in current channel\n* /BYE: disconnect from server\n* /KICK <nick>: kick user from current channel [admin]\n* /REN <channel>: change the current channel name [admin]"
 
@@ -58,7 +58,8 @@ err_msg={"ERR 0": "Erreur : commande inconnue.",
          "ERR 11": "Erreur : vous ne pouvez pas JOIN votre propre channel.",
          "ERR 12": "Erreur : cet utilisateur a déjà ce statut.",
          "ERR 13": "Erreur : il n'y a aucun fichier qui vous est destiné.",
-         "ERR 14": "Erreur : un fichier a déjà été envoyé à ce client. Veuillez réessayer plus tard."}
+         "ERR 14": "Erreur : un fichier a déjà été envoyé à ce client. Veuillez réessayer plus tard.",
+         "ERR 15": "Erreur : Cette IP est blacklistée"}
 
 #--------- FUNCTIONS -------------
 
@@ -168,7 +169,7 @@ def display_chan(chan): #usefull function to quick generate admin symbol by read
     return "#"+chan+" | "
 
 #------- displays functions to clarify code:
-def display_join(words):
+def display_join(data, words):
     j_channel, j_rank, j_nick = words[1:]
     if(j_rank=="0"):
         if(j_nick == nick):
@@ -179,7 +180,7 @@ def display_join(words):
         data = "Vous venez de créer le channel " + j_channel
     return data
 
-def display_kick(words):
+def display_kick(data, words):
     k_adminNick, k_rank, k_nick = words[2:]
     if(k_nick == nick):
         data = display_chan(words[1]) + display_rank("1",k_adminNick) + " vous a kické !"
@@ -190,19 +191,19 @@ def display_kick(words):
             data = display_chan(words[1]) + display_rank("1",k_adminNick) + " a kické "+  display_rank(k_rank,k_nick) + "."
     return data
 
-def display_leave(words):
+def display_leave(data, words):
     if(words[3] == nick):
         data = "Vous venez de quitter le channel "+words[1]+"."
     else:
         data = words[3] + " a quitté le channel."
         if(words[2] == "1"):
             if(words[3] == nick):
-                data = "Vous devenez administrateur."
+                data += " Vous devenez administrateur."
             else:
-                data = words[4] +" devient administrateur."  
+                data += " " + words[4] +" devient administrateur."  
     return data
 
-def display_nick(words):
+def display_nick(data, words):
     rank,oldNick,newNick = words[1:]
     if(oldNick == nick):
         data = "Vous vous êtes renommé en " + newNick + "."
@@ -211,7 +212,7 @@ def display_nick(words):
         data = oldNick + " s'est renommé en " + newNick + "."
     return data
 
-def display_grant(words):
+def display_grant(data, words):
     chan, adminNick, newAdmin = words[1:]
     if(newAdmin == nick):
         data = display_chan(chan) + display_rank("1",adminNick) + " vous a OPé."
@@ -219,7 +220,7 @@ def display_grant(words):
         data = display_chan(chan) + display_rank("1",adminNick) + " a OPé " + newAdmin + "."
     return data
 
-def display_revoke(words):
+def display_revoke(data, words):
     chan, adminNick, oldAdmin = words[1:]
     if(oldAdmin == nick):
         data = display_chan(chan) + display_rank("1",adminNick) + " vous a dé-OPé."
@@ -227,25 +228,14 @@ def display_revoke(words):
         data = display_chan(chan) + display_rank("1",adminNick) + " a dé-OPé " + oldAdmin + " admin."
     return data
 
-def display_who(words):
+def display_who(data, words):
     string = "Utilisateurs sur le channel :"
     for i in range(1, len(words), 2):
         string += "\n- " + display_rank(words[i],words[i+1]) 
     data = string
     return data
 
-def display_history(words):
-    data = ""
-    chan = words[1]
-    state = words[2]
-    if(state == "0"):
-        data = "----- Historique du channel "+chan+" -----"
-    else:
-        data = "----- Fin d'historique du channel "+chan+" -----"
-    return data
-
 #------- main display function:
-
 def display(s,data):
     
     global file_recv
@@ -270,9 +260,9 @@ def display(s,data):
         elif(cmd == "LIST"):
             data = "Channels actifs :\n- " + ('\n- '.join(words[1:]))
         elif(cmd == "JOIN"):
-            data = display_join(words)
+            data = display_join(data, words)
         elif(cmd == "KICK"):
-            data = display_kick(words);
+            data = display_kick(data, words);
         
         elif(cmd == "SEND"):
             global file_send
@@ -295,29 +285,21 @@ def display(s,data):
         elif(cmd == "SENDF"):
             picrom_sendf(s)
             return
-        
-        elif(cmd == "HISTORY"):
-            data = display_history(words)
-
-        elif("201" in cmd):         #if it is an history
-            #print(datagram)
-            data = ">> "+ data
-            
         else:
             data = display2(cmd, s, data, words)
             
             
-        return data
+        print(data)
 
 def display2(cmd, s, data, words): #second function to have complexity < C, yes I know it's dirty
     if(cmd == "REN"):
         data = display_chan(words[1]) + display_rank("1",words[2]) + " a renommé le channel en " + words[3]+ "."
     
     elif(cmd == "WHO"):
-        data = display_who(words)
+        data = display_who(data, words)
         
     elif(cmd == "LEAVE"):
-        data = display_leave(words)
+        data = display_leave(data, words)
             
     elif(cmd == "BYE"):
         data = words[1] + " a quitté le serveur."
@@ -326,13 +308,12 @@ def display2(cmd, s, data, words): #second function to have complexity < C, yes 
         data = "Vous êtes dans le channel "+words[1]+"."
             
     elif(cmd == "NICK"):
-        data = display_nick(words)
+        data = display_nick(data, words)
     elif(cmd == "GRANT"):
-        data = display_grant(words)
+        data = display_grant(data, words)
             
     elif(cmd == "REVOKE"):
-        data = display_revoke(words)
-        
+        data = display_revoke(data, words)
     else:
         data = display_server_commands(cmd, s, data, words)
     return data
@@ -346,7 +327,11 @@ def display_server_commands(cmd, s, data, words):
             data = "Un administrateur serveur vous a expulsé !"
         else:
             data = "Un administrateur serveur a expulsé " + words[1]
-    
+    if(cmd == "BAN"):
+        if(words[1] == nick):
+            data = "VOUS ETES BANNI ! ! !"
+        else:
+            data = "Un administrateur serveur a banni " + words[1]
     return data
         
     
@@ -366,7 +351,7 @@ while(nick == ''):
         data = s.recv(1024)
         command = data.decode().split()[0]
         if(command == 'ERR'):
-            print(err_msg['ERR 3'])
+            print(err_msg[data.decode()[:-1]])
         else:
             nick = msg
             print("Connecté au serveur "+ HOST +". Bienvenue, "+nick+" !")
@@ -383,7 +368,7 @@ while(1):
         if(type(i) == socket.socket): #if we received sth from the socket
             data = s.recv(1024)
             if (len(data) != 0):
-                print(display(s,data)) #displays coming data
+                display(s,data) #displays coming data
         else:
             msg = sys.stdin.readline()
             send(msg,s)
