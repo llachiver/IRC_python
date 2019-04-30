@@ -542,7 +542,7 @@ def picrom_grant(clt, args):
     if(targetSoc == None):
         send("ERR 4", clt)
         return
-    if(clients[targetSoc][2] == 1):
+    if(targetSoc in admins[clients[clt][3]]):
         send("ERR 12", clt)
         return
     clients[targetSoc][2] = 1
@@ -566,7 +566,7 @@ def picrom_revoke(clt, args):
     if(targetSoc == None):
         send("ERR 4", clt)
         return
-    if(clients[targetSoc][2] == 0):
+    if(not(targetSoc in admins[clients[clt][3]])):
         send("ERR 12", clt)
         return
     clients[targetSoc][2] = 0
