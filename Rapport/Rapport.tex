@@ -112,6 +112,7 @@ la commande : \emph{python3 server.py}
     \item[---SENDF <package> | void ] \ding{108} envoi d'une partie du fichier | SENDF seul pour indiquer la fin de la transmission
     \item[---RECV] \ding{108} demande de réception d'un fichier qui nous est destiné.
     \item[---RECVF] \ding{108} paquet bien reçu, demande du paquet suivant
+    \item[---HISTORY] \ding{108} demande de transmission de l'historique du channel
     \\
 \end{description}
 
@@ -155,6 +156,7 @@ la commande : \emph{python3 server.py}
     \item[---SENDF] \ding{108} réception du paquet ok, en attente du prochain
     \item[---RECV <sender\_nick | >]\ding{88} |\ding{108} Indique au destinataire qu'un fichier l'attend | demande du paquet suivant
     \item[---RECVF <file\_package | >] : \ding{108} envoie un paquet | téléchargement terminé vous avez tout reçu
+    \item[---HISTORY <0 | 1>] : \ding{108} début de transmission de l'historique | fin de transmission de l'historique
     \\
 \end{description}
 
@@ -225,8 +227,7 @@ les noms.
 
 \noindent{\underline{Fonction de traitement:}}
 Lorsque le serveur reçoit une commande client "COMMAND" par exemple, le serveur appelle
-la fonction "picrom\_command()" qui va effectuer l'action demandée. Ces fonctions ont toutes
-le même fonctionnement:
+la fonction "picrom\_command()" qui va effectuer l'action demandée. Ces fonctions marchent de la même manière :
 \\-- Vérification des cas d'erreurs (client cible inconnu, besoin d'être admin,...)
 \\-- Modification des structures de données (traitement de l'action)
 \\-- Retour serveur au client, à la cible, ou à tous les clients du $channel$ ou du serveur
@@ -236,7 +237,7 @@ le même fonctionnement:
 \\
 
 \noindent{\underline{Choix et optimisations:}}
-L'utilisation des dictionnaires et des $set()$ permet d'éviter énormément de parcours
+L'utilisation des dictionnaires et des $set()$ permet d'éviter beaucoup de parcours
 de listes et rend la complexité bien meilleure. Cependant s'il est facile de récupérer le
 pseudo d'un client en connaissant son socket, l'inverse nécessite de parcourir les clients
 dans un $channel$. Nous pourrions améliorer ceci avec un autre $set()$.
@@ -253,15 +254,11 @@ associe les sockets aux pseudos.
 
 \noindent{\underline{Echange de fichier}
 L'échange de fichiers s'effecture grâce à deux commandes : /SEND, entrée par l'expéditeur, et /RECV, entrée par le destinataire.
-Nous avons opté pour des entêtes supplémentaires dans le protocole PICROM (voir SENDF et RECVF plus haut).
-Pour SEND, voici comment opère l'échange :
-
-
-
+Nous avons opté pour des entêtes supplémentaires dans le protocole PICROM (voir SENDF et RECVF plus haut).\\
+Pour SEND, le protocole est décrit en annexe.
 RECV fonctionne sur le même principe, sauf qu'une fois que le serveur a confirmé qu'il avait un fichier pour le client, le client répond "RECVF" qui correspond à l'acquittement.
 Cela permet de garder un système question/réponse.
-
-A l'étape 1, on fait un try sur l'ouverture du fichier pour vérifier s'il existe bien.
+\\Les difficultés rencontrées dans l'échange de fichiers sont détaillées dans la partie "problèmes rencontrés".
 
 \section{Client}
 
@@ -289,6 +286,7 @@ la commande : \emph{python3 client.py}
 \item[---/REVOKE <pseudo>]\ding{88} pour destituer un admin
 \item[---/SEND <pseudo> <nomDuFichier>] envoyer un fichier à destination d'un client
 \item[---/RECV <nomDuFichier>] récupérer un fichier qui vous est destiné
+\item[---/HISTORY] récupérer l'historique du channel
 \end{description}
 
 
@@ -362,12 +360,17 @@ Nous avons donc synchronisé le serveur avec le client à 1024 bits de longueur 
 
 \section{Conclusion}
 
-\emph{"lalalalalalala"}
+\emph{"J'ai trouvé le sujet très motivant. Je pense qu'en informatique il est important de pratiquer pour progresser, et ce projet en est la preuve.
+J'ai progressé en python (alors que je connaissais peu ce langage), j'ai découvert ses avantages et ses inconvénients. Le fait qu'il soit interprété permet 
+une plus grande flexibilité, en revanche il est difficile de savoir si chaque fonction marche, donc tester son programme peut vite devenir fatiguant.
+Nous avons été surpris par la complexité de l'envoi et réception de fichiers, mais cela nous a permis de découvrir d'autres pans de l'informatique et de s'adapter.
+Il était gratifiant de voir notre programme fonctionner, car le côté intéractif du chat nous a donné la sensation d'avoir travaillé pour quelque chose (exemple : échange de fichiers à distance depuis nos deux PC)
+Le fait de partir de zéro et de devoir créer nos propres protocoles m'a montré l'importance d'un cahier des charges (ici le Readme) bien rédigé afin de pouvoir construire notre programme sur ses bases.
+Au final, j'ai apprécié mener ce projet avec Romain, je regrette seulement que le rendu tombe au moment des partiels car cela nécessite tout de même beaucoup de temps.
+"}
 \begin{flushright}
     Loïc Lachiver
 \end{flushright}
-
-
 
 \emph{"lalalalalalala"}
 \begin{flushright}
