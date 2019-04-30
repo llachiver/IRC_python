@@ -46,8 +46,9 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (I) GRANT (newAdmin)
 - (I) REVOKE (oldAdmin)
 - (I) SEND (nick) (file_name)
-- (I) SENDF (package or void) : will be sent untill the transfer is complete
-- (I) RECV : demand to receive our file
+- (I) SENDF (file_package or void) : will be sent untill the transfer is complete
+- (I) RECV : demands to receive the file
+- (I) RECVF : package reception ok, waiting for the following
 
 
 
