@@ -79,9 +79,8 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 - (T|B) RECV (sender_nick | void) : to notify the recipient he received a file from sender_nick | your are ready to RECVF
 - (B) RECVF (file_package or void) : will be sent untill the transfer is complete
 
-
-
-
+## Input commands (in Serv shell):
+- GLOBAL (message): send a message to everyone
 
 
 

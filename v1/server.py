@@ -567,6 +567,18 @@ def picrom_revoke(clt, args):
     send_channel("REVOKE " + clients[clt][3] + " " + clients[clt][1] + " " + clients[targetSoc][1] , clt)    
 
 
+
+def picrom_global(args):
+    if (len(args) < 1):
+        log("Output >>> ERR 9\n")
+        return
+    
+    message = ' '.join(args)
+    send_all("GLOBAL " + message,None)
+
+
+
+
 #starting server
 #-----------------------------------------------------
 serverSoc = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0) #socket d'écoute
@@ -584,8 +596,19 @@ while(True):
     #browse all connected sockets
     for s_clt in connected:
         if(type(s_clt) != socket.socket): #case of input in server
-            msg = sys.stdin.readline()
-            print(msg)
+            line = sys.stdin.readline()
+            log("Input >>> " + line)
+            words = line.split()
+            command = ""
+            args = ""
+            if(len(words) > 0):
+                command = words[0]
+                args = words[1:]
+            if(command == "GLOBAL"):
+                picrom_global(args)
+            else:
+                log("Output >>> ERR 0\n")
+                
             continue
         
         if (s_clt == serverSoc): #case of new connection

@@ -29,9 +29,8 @@
 
 ## Bonus (à compléter)
 
-| Commandes       | Score (/10) |
-| --------------- | ----------- |
-| bonus 1 (/CMD1) |             |
-| bonus 2 (/CMD2) |             |
-| bonus 3 (/CMD3) |             |
-| ...             |             |
+| Commandes                              | Score (/10) |
+| -------------------------------------- | ----------- |
+| send message to all users (GLOBAL)     |      10     |
+| bonus 2 (/CMD2)                        |             |
+| bonus 3 (/CMD3)                        |             |

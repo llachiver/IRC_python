@@ -313,8 +313,15 @@ def display2(cmd, s, data, words): #second function to have complexity < C, yes 
             
     elif(cmd == "REVOKE"):
         data = display_revoke(data, words)
+    else:
+        data = display_server_commands(cmd, s, data, words)
     return data
 
+
+def display_server_commands(cmd, s, data, words):
+    if(cmd == "GLOBAL"):
+        data = "[Message Serveur] " + (' '.join(words[1:]))
+    return data
         
     
 #--------- CONNECTION -------------
