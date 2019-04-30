@@ -448,13 +448,17 @@ def picrom_kick(clt,args):
         return
     
     send_channel(("KICK "  + clients[clt][3] + " " + clients[clt][1] + " " + str(clients[targetSoc][2]) + " " + clients[targetSoc][1]), clt, True)
-    nextChan = "HUB"
-    for i in channels:
-        if((targetSoc in channels[i]) and (i != "HUB") and (i != clients[targetSoc][3])):
-            nextChan = i
-            break
-    clt_change_channel(targetSoc,nextChan)
-
+    if(clients[targetSoc][3] == clients[clt][3]):
+        nextChan = "HUB"
+        for i in channels:
+            if((targetSoc in channels[i]) and (i != "HUB") and (i != clients[targetSoc][3])):
+                nextChan = i
+                break
+        clt_change_channel(targetSoc,nextChan)
+    else:
+        admins[clients[clt][3]].discard(targetSoc)
+        channels[clients[clt][3]].remove(targetSoc)
+        
 
 
 def picrom_leave(clt, brutal = False):
