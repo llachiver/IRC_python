@@ -579,7 +579,7 @@ def picrom_history(clt):
     if(channel == "HUB"):
         send("ERR 5",clt)
         return
-    l = [ line for line in open('log.log') if ('IN '+channel) in line]
+    l = [ line for line in open('log.log', encoding='latin-1') if ('IN '+channel) in line]
     send("HISTORY "+channel+" 0",clt)       #starting history
     for i in range(len(l)):                 #loops through the filtered log lines
         clt.send(l[i].encode())

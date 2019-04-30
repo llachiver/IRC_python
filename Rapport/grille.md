@@ -25,7 +25,7 @@
 | grant admin privileges (/GRANT)         |      10     |
 | revoke admin privileges  (/REVOKE)      |      10     |
 | send & receive file (/SEND & /RECV)     |      10     |
-| history (/HISTORY)                      |             |
+| history (/HISTORY)                      |      6      |
 
 ## Bonus (à compléter)
 
