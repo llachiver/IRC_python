@@ -241,7 +241,38 @@ le plus utilisée en pratique.
 associe les sockets aux pseudos.
 \\
 
-\noindent{\underline{Echange de fichiers:}}
+\noindent{\underline{Echange de fichier}
+L'échange de fichiers s'effecture grâce à deux commandes : /SEND, entrée par l'expéditeur, et /RECV, entrée par le destinataire.
+Nous avons opté pour des entêtes supplémentaires dans le protocole PICROM (voir SENDF et RECVF plus haut).
+Pour SEND, voici comment opère l'échange :
+<insérer image !!!>
+
+A l'étape 1, on fait un try sur l'ouverture du fichier pour vérifier s'il existe bien.
+
+Problèmes recontrés :
+
+1)
+
+Tout d'abord, nous nous sommes demandés s'il était attendu de pouvoir envoyer n'importe quel type de fichier.
+En effet, c'est relativement simple pour les fichiers textes car ils sont en clair, on peut donc les ouvrir avec la fonction open('filename','r')
+Par contre, les pdf, images ou autres fichiers non clairs sont ouverts avec l'argument 'rb' au lieu de 'r'.
+Cela change notre manière de décoder les trames côté serveur, car cela veut dire que SENDF envoie des données non claires.
+Les fonctions decode(), split() etc. ne peuvent pas s'appliquer aux trames dont l'entête est SENDF car ce ne sont pas de simples chaînes de caractères.
+Pour détecter une entête SENDF, on doit donc la comparer avec b"SENDF", qui correspond à la valeur encodée de "SENDF". Si ce n'est pas cette entête, alors on peut se permettre de décoder la trame.
+
+2) 
+En argument de la fonction SEND, il est demandé dans le cahier des charges de spécifier <file/to/path>.
+Sur Windows, les chemins d'accès à un fichier sont de cette forme : C:\\Users\\picrom\\test.py, alors que sur Linux les "\\" sont remplacés par des "/".
+Cela complique donc la gestion des répertoires, nous avons finalement opté pour mettre le fichier à envoyer dans le même dossier que "client.py", ce qui est plus simple.
+De même côté serveur, le fichier sera téléchargé dans le même dossier que server.py.
+
+3)
+Au départ, on lisait le fichier par paquet de 1024 bits. En ajoutant l'entête "SENDF + paquet", on envoyait donc une trame plus grande que 1024 bits.
+Seulement le serveur est paramétré pour 
+
+RECV fonctionne sur le même principe, sauf qu'une fois que le serveur a confirmé qu'il avait un fichier pour le client, le client répond "RECVF" qui correspond à l'acquittement.
+Cela permet de garder un système question/réponse.
+
 
 \section{Client}
 
@@ -274,6 +305,17 @@ la commande : \emph{python3 client.py}
 
 
 \subsection{Implémentation}
+Au démarrage du client, on initialise tout d'abord les deux variables HOST et PORT.
+Si le programme est appelé sans argument, on les initialise respectivement à 127.0.0.1 (soit localhost) et 1459.
+
+Voilà les variables et structures utilisées :
+\begin{itemize}
+    \item nick : le nick du client (str).
+    \item file_send : file object du fichier à envoyer (avec /SEND).
+    \item file_recv : file object du fichier à recevoir (avec /RECV).
+    \item cmd_list : dictionnaire ayant pour clé la commande et comme valeur son nombre d'arguments. Cela permet de vérifier si la commande existe et si elle est bien tapée.
+    \item help_msg : le message d'aide affiché avec /HELP.
+    \item err_msg : dictionnaire ayant pour clé le numéro de l'erreur et comme valeur le message affiché côté client.
 
 
 

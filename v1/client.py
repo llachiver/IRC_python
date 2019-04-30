@@ -34,7 +34,6 @@ if(len(sys.argv) == 3):
 print("Connexion au serveur à l'adresse " + HOST + ":" + str(PORT))
 
 nick = '' #user's nickname
-channel = "HUB"
 
 file_send = None
 
