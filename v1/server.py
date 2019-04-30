@@ -595,7 +595,7 @@ while(True):
 
             line = ""
             try:
-                line = s_clt.recv(1500)
+                line = s_clt.recv(1024)
             except:
                 picrom_bye(s_clt)
                 break
