@@ -59,7 +59,9 @@ nicks = set()
 file_transfered={}
 
 sockets = []
-guest = 1
+
+banneds = set() #banned IPs
+
 
 #-----------------------------------------------------
 #Display and save server information
@@ -284,7 +286,7 @@ def picrom_recvf(clt):
 
 def picrom_connect(clt, nick):
     addr = waiting_room[clt]
-    clients[clt] = [addr[0], nick, 0, "HUB"]
+    clients[clt] = [addr, nick, 0, "HUB"]
     channels["HUB"].append(clt)
     nicks.add(nick)
     del waiting_room[clt]
@@ -573,6 +575,7 @@ def picrom_revoke(clt, args):
 
 
 
+#server input functions:
 def picrom_global(args):
     if (len(args) < 1):
         log("Output >>> ERR 9\n")
@@ -592,6 +595,20 @@ def picrom_kill(args):
         return
     send_all("KILL " + target, targetSoc, True)
     picrom_bye(targetSoc)
+
+def picrom_ban(args):
+    if (len(args) < 1):
+        log("Output >>> ERR 9\n")
+        return
+    target = args[0]
+    targetSoc = find_soc_from_nick(target, None)
+    if(targetSoc == None):
+        log("Output >>> ERR 4\n")
+        return
+    banneds.add(clients[targetSoc][0])
+    send_all("BAN " + target, targetSoc, True)
+    picrom_bye(targetSoc)
+
     
 
 #starting server
@@ -623,6 +640,8 @@ while(True):
                 picrom_global(args)
             elif(command == "KILL"):
                 picrom_kill(args)
+            elif(command == "BAN"):
+                picrom_ban(args)
             else:
                 log("Output >>> ERR 0\n")
                 
@@ -631,10 +650,12 @@ while(True):
         if (s_clt == serverSoc): #case of new connection
             
             (soc,addr) = serverSoc.accept()
-            waiting_room[soc] = addr[0]
-            sockets.append(soc)
-            log(addr[0] + " joined the waiting room.\n")
-
+            if(not (addr[0] in banneds)):
+                waiting_room[soc] = addr[0]
+                sockets.append(soc)
+                log(addr[0] + " joined the waiting room.\n")
+            else: #banned IP
+                soc.send(b"ERR 15\n")
 
         else: #the client is connected
 
