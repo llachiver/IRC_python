@@ -112,6 +112,11 @@ def send_all(string, clt_sender, self=False):
 
 #Returns nickname from a client socket
 def find_soc_from_nick(nick, chan):
+    if(chan == None):
+        for i in clients:
+            if(clients[i][1] == nick):
+                return i
+        return None
     for i in channels[chan]:
         if(clients[i][1] == nick):
             return i
@@ -576,8 +581,18 @@ def picrom_global(args):
     message = ' '.join(args)
     send_all("GLOBAL " + message,None)
 
-
-
+def picrom_kill(args):
+    if (len(args) < 1):
+        log("Output >>> ERR 9\n")
+        return
+    target = args[0]
+    targetSoc = find_soc_from_nick(target, None)
+    if(targetSoc == None):
+        log("Output >>> ERR 4\n")
+        return
+    send_all("KILL " + target, targetSoc, True)
+    picrom_bye(targetSoc)
+    
 
 #starting server
 #-----------------------------------------------------
@@ -606,6 +621,8 @@ while(True):
                 args = words[1:]
             if(command == "GLOBAL"):
                 picrom_global(args)
+            elif(command == "KILL"):
+                picrom_kill(args)
             else:
                 log("Output >>> ERR 0\n")
                 

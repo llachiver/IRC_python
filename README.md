@@ -81,6 +81,7 @@ Using Tkinter for the GUI: http://tkinter.fdex.eu/
 
 ## Input commands (in Serv shell):
 - GLOBAL (message): send a message to everyone
+- KILL (nick) : force someone to bye server
 
 
 
