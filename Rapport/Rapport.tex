@@ -8,9 +8,10 @@
 \usepackage{pifont}
 \usepackage{algorithmic}
 \usepackage{algorithm}
+\usepackage{graphicx}
 
 \title{Projet réseau - Chat Python}
-\author{Loïc Lachiever}
+\author{Loïc Lachiver}
 \author{Romain Pigret-Cadou}
 
 \begin{document}
@@ -73,7 +74,7 @@ Notre serveur est basé sur le protocole PICROM, intitulé par concaténation de
 3 premières lettres de nos pseudonymes respectifs.
 
 \subsection{Documentation}
-Le serveur peut-être lancé depuis le shell IDLE ou sur un terminal linux avec
+Le serveur peut-être lancé UNIQUEMENT depuis un terminal linux avec
 la commande : \emph{python3 server.py}
 \\ou \emph{python3 server.py port} , sinon le port par défaut est 1459
 \\
@@ -245,34 +246,13 @@ associe les sockets aux pseudos.
 L'échange de fichiers s'effecture grâce à deux commandes : /SEND, entrée par l'expéditeur, et /RECV, entrée par le destinataire.
 Nous avons opté pour des entêtes supplémentaires dans le protocole PICROM (voir SENDF et RECVF plus haut).
 Pour SEND, voici comment opère l'échange :
-<insérer image !!!>
 
-A l'étape 1, on fait un try sur l'ouverture du fichier pour vérifier s'il existe bien.
 
-Problèmes recontrés :
-
-1)
-
-Tout d'abord, nous nous sommes demandés s'il était attendu de pouvoir envoyer n'importe quel type de fichier.
-En effet, c'est relativement simple pour les fichiers textes car ils sont en clair, on peut donc les ouvrir avec la fonction open('filename','r')
-Par contre, les pdf, images ou autres fichiers non clairs sont ouverts avec l'argument 'rb' au lieu de 'r'.
-Cela change notre manière de décoder les trames côté serveur, car cela veut dire que SENDF envoie des données non claires.
-Les fonctions decode(), split() etc. ne peuvent pas s'appliquer aux trames dont l'entête est SENDF car ce ne sont pas de simples chaînes de caractères.
-Pour détecter une entête SENDF, on doit donc la comparer avec b"SENDF", qui correspond à la valeur encodée de "SENDF". Si ce n'est pas cette entête, alors on peut se permettre de décoder la trame.
-
-2) 
-En argument de la fonction SEND, il est demandé dans le cahier des charges de spécifier <file/to/path>.
-Sur Windows, les chemins d'accès à un fichier sont de cette forme : C:\\Users\\picrom\\test.py, alors que sur Linux les "\\" sont remplacés par des "/".
-Cela complique donc la gestion des répertoires, nous avons finalement opté pour mettre le fichier à envoyer dans le même dossier que "client.py", ce qui est plus simple.
-De même côté serveur, le fichier sera téléchargé dans le même dossier que server.py.
-
-3)
-Au départ, on lisait le fichier par paquet de 1024 bits. En ajoutant l'entête "SENDF + paquet", on envoyait donc une trame plus grande que 1024 bits.
-Seulement le serveur est paramétré pour 
 
 RECV fonctionne sur le même principe, sauf qu'une fois que le serveur a confirmé qu'il avait un fichier pour le client, le client répond "RECVF" qui correspond à l'acquittement.
 Cela permet de garder un système question/réponse.
 
+A l'étape 1, on fait un try sur l'ouverture du fichier pour vérifier s'il existe bien.
 
 \section{Client}
 
@@ -309,14 +289,61 @@ Au démarrage du client, on initialise tout d'abord les deux variables HOST et P
 Si le programme est appelé sans argument, on les initialise respectivement à 127.0.0.1 (soit localhost) et 1459.
 
 Voilà les variables et structures utilisées :
-\begin{itemize}
-    \item nick : le nick du client (str).
-    \item file_send : file object du fichier à envoyer (avec /SEND).
-    \item file_recv : file object du fichier à recevoir (avec /RECV).
-    \item cmd_list : dictionnaire ayant pour clé la commande et comme valeur son nombre d'arguments. Cela permet de vérifier si la commande existe et si elle est bien tapée.
-    \item help_msg : le message d'aide affiché avec /HELP.
-    \item err_msg : dictionnaire ayant pour clé le numéro de l'erreur et comme valeur le message affiché côté client.
+\begin{description}
+    \item[nick] : le nick du client (str).
+    \item[file\_send] file object du fichier à envoyer (avec /SEND).
+    \item[file\_recv] file object du fichier à recevoir (avec /RECV).
+    \item[cmd\_list] dictionnaire ayant pour clé la commande et comme valeur son nombre d'arguments. Cela permet de vérifier si la commande existe et si elle est bien tapée.
+    \item[help\_msg] le message d'aide affiché avec /HELP.
+    \item[err\_msg] dictionnaire ayant pour clé le numéro de l'erreur et comme valeur le message affiché côté client.
+\end{description}
 
+Tout d'abord, le client rentre dans une boucle qui teste si le nick entré est bien valide, que ce soit côté client (si le nick n'est pas vide) et côté serveur (s'il n'est pas déjà utilisé).
+\\On rentre ensuite dans la boucle principale.
+\\Afin de ne pas bloquer les retours serveur, on utilise select.select pour traiter les données du "premier qui parle" entre le socket de connexion et sys.stdin.
+\\Ainsi, le client peut taper son message mais par contre les retours serveurs sont synchronisés avec ce qu'il tape. Pour éviter cela, il faudrait désactiver les entrées canoniques (avec tty.setraw(sys.stdin)), mais cette solution n'est pas viable sous Windows, donc nous ne l'avons pas adoptée.
+\\Ensuite, en fonction de l'entrée sélectionnée on exécute la fonction send (si c'est une entrée utilisateur) ou display (si c'est un retour serveur).
+\\Pour chaque commande entrée, on teste le nombre d'arguments et on construit la trame PICROM correspondante avec la fonction send. 
+Quant à la fonction display, elle récupère les arguments des trames PICROM et affiche les messages correspondants, avec : 
+- c'est à dire le channel (si nécessaire)
+- les pseudos (avec affichage des admins grâce à la fonction display\_rank)
+- les eventuelles erreurs (avec le dictionnaire err\_msg)
+- les informations serveurs (quand un utilisateur join, leave, change de pseudo, kick, OP etc.)
+
+Exemple d'affichage côté client :
+
+\begin{verbatim}
+#chanL2Info | Romain a rejoint le channel.
+#chanL2Info | Loic a rejoint le channel.
+#chanL2Info | @GBlin@ > Qu'est-ce que la feuille d'un arbre ?
+#chanL2Info | Loic > En morphologie végétale, c'est l'organe spécialisé dans la photosynthèse chez les végétaux supérieurs.
+#chanL2Info | Romain > C'est un noeud qui n'a pas de fils.
+#chanL2Info | @GBlin@ a kické Loic !
+#chanL2Info | @GBlin@ a OPé Romain.
+#chanL2Info | @Romain@ > yes !
+\end{verbatim}
+
+\section{Problèmes recontrés :}
+
+1)
+
+Il est facile d'écrire et d'envoyer des données de fichiers en clair (fichiers textes, par exemple). On peut les ouvrir avec la fonction open('filename','r')
+Par contre, les pdf, images ou autres fichiers non clairs sont ouverts avec l'argument 'rb' au lieu de 'r'.
+Cela change notre manière de décoder les trames côté serveur, car cela veut dire que SENDF envoie des données non claires.
+Les fonctions decode(), split() etc. ne peuvent pas s'appliquer aux trames dont l'entête est SENDF car ce ne sont pas de simples chaînes de caractères.
+Pour détecter une entête SENDF, on doit donc la comparer avec b"SENDF", qui correspond à la valeur encodée de "SENDF". Si ce n'est pas cette entête, alors on peut se permettre de décoder la trame.
+
+2) 
+En argument de la fonction SEND, il est demandé dans le cahier des charges de spécifier <file/to/path>.
+Sur Windows, les chemins d'accès à un fichier sont de cette forme : C:\\Users\\picrom\\test.py, alors que sur Linux les "\\" sont remplacés par des "/".
+Cela complique donc la gestion des répertoires, nous avons finalement opté pour mettre le fichier à envoyer dans le même dossier que "client.py", ce qui est plus simple.
+De même côté serveur, le fichier sera téléchargé dans le même dossier que server.py.
+
+3)
+Au départ, on lisait le fichier par paquet de 1024 bits. En ajoutant l'entête "SENDF + paquet", on envoyait donc une trame plus grande que 1024 bits.
+La fonction listen du socket server avait pour argument 1500. Le serveur attendait donc des trames de 1500 bits.
+Par conséquent, le serveur concaténait plusieurs trames en une seule, ce qui fait qu'il essayait de décoder des entêtes correspondantes aux données des fichiers envoyés, ce quie le faisait planter.
+Nous avons donc synchronisé le serveur avec le client à 1024 bits afin d'être sûr de recevoir les bonnes trames.
 
 
 \section{Conclusion}
@@ -325,7 +352,7 @@ Voilà les variables et structures utilisées :
 
 
 \section{Annexes}
-\subsection{Cahier des charges}
+\noindent{\underline{Cahier des charges}
 {\large \textbf{\underline{Commandes client v0:}}}
 \begin{itemize}
     \item /HELP: print this message
@@ -352,7 +379,9 @@ Voilà les variables et structures utilisées :
 \item /RECV </path/to/file>: receive a file and save it locally
 \item /HISTORY: print history of current channel (saved by server)
 \end{itemize}
+\noindent{\underline{Protocole SEND}
 
+\includegraphics[height=15cm]{sendprotoc.png}
 
 \end{document}
 
